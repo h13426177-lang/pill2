@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeDrug AI | 스마트 약물안전 부작용 예측 시스템</title>
+    <!-- 구글 웹폰트: Outfit (영어/숫자) & Noto Sans KR (한국어) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome 무료 아이콘 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* ==========================================================================
+           [Core Design System - CSS Variables & Reset]
+           ========================================================================== */
+        :root {
+            /* 약물 안전 및 스마트 헬스케어에 적합한 메디컬 에메랄드 그린 및 청량한 아쿠아 블루 컬러 팔레트 */
+            --bg-gradient: radial-gradient(circle at 50% 50%, #060b0e 0%, #030507 100%);
+            --panel-bg: rgba(10, 18, 20, 0.75);
+            --panel-border: rgba(255, 255, 255, 0.06);
+            --neon-primary: #10b981;    /* 생명과 안전을 나타내는 상쾌한 에메랄드 그린 */
+            --neon-secondary: #0ea5e9;  /* 청량하고 스마트한 헬스케어 아쿠아 블루 */
+            --text-main: #f3f4f6;       /* 부드러운 화이트 */
+            --text-muted: #9ca3af;      /* 그레이 톤 */
+            --text-accent: #059669;     /* 딥 에메랄드 */
+            --error-color: #ef4444;     /* 경고 레드 */
+            --success-color: #10b981;   /* 성공 그린 */
+            --glow-glow: 0 0 25px rgba(16, 185, 129, 0.2); /* 은은한 에메랄드 빛 글로우 */
+            --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans KR', 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* 배경 장식 원형 글로우 (메디컬 안심 그린 및 스마트 블루 톤) */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            top: -10%;
+            left: -10%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::after {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 70%);
+            bottom: -15%;
+            right: -10%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ==========================================================================
+           [UX/UI - Glassmorphism Container Design]
+           ========================================================================== */
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .auth-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), var(--glow-glow);
+            transition: var(--transition-smooth);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 상단 그라데이션 장식 선 (에메랄드 -> 아쿠아 블루) */
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--neon-primary), var(--neon-secondary));
+        }
+
+        /* ==========================================================================
+           [UI Elements - Typography & Header]
+           ========================================================================== */
+        .brand-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--neon-primary), var(--neon-secondary));
+            border-radius: 18px;
+            font-size: 28px;
+            color: #fff;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35); }
+            100% { transform: scale(1.04); box-shadow: 0 8px 32px rgba(14, 165, 233, 0.5); }
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #ffffff, #93c5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 400;
+            letter-spacing: -0.3px;
+        }
+
+        /* ==========================================================================
+           [UI Elements - Form & Inputs]
+           ========================================================================== */
+        .form-panel {
+            display: none; /* JS 제어로 노출 */
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .form-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 22px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 18px;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: var(--transition-smooth);
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 16px 18px 16px 48px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .auth-input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .auth-input:focus {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--neon-primary);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+
+        .auth-input:focus + i {
+            color: var(--neon-primary);
+            transform: scale(1.1);
+        }
+
+        /* ==========================================================================
+           [UI Elements - Button Components]
+           ========================================================================== */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, var(--neon-primary), var(--neon-secondary));
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.25);
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .btn-submit:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 폼 전환 유도 영역 */
+        .switch-panel {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .switch-link {
+            color: var(--neon-primary);
+            font-weight: 700;
+            text-decoration: none;
+            margin-left: 6px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-block;
+        }
+
+        .switch-link:hover {
+            color: var(--neon-secondary);
+            text-shadow: 0 0 8px rgba(14, 165, 233, 0.3);
+            transform: scale(1.02);
+        }
+
+        /* ==========================================================================
+           [UI Elements - Toast Message Component]
+           ========================================================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(10, 18, 20, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(16, 185, 129, 0.1);
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast-container.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            font-size: 18px;
+        }
+
+        .toast-icon.error { color: var(--error-color); }
+        .toast-icon.success { color: var(--success-color); }
+        .toast-icon.info { color: var(--neon-secondary); }
+
+        .toast-message {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            
+            <!-- 약물 안전 전용 의학적 브랜드 헤더 영역 -->
+            <div class="brand-header">
+                <div class="brand-logo">
+                    <i class="fa-solid fa-prescription-bottle-medical"></i>
+                </div>
+                <h1 class="brand-title">SafeDrug AI</h1>
+                <p class="brand-subtitle">지능형 개인 맞춤약 안전관리 & 부작용 예측 서비스</p>
+            </div>
+
+            <!-- ==========================================
+                 [Form Panel 1: 로그인]
+                 ========================================== -->
+            <div id="login-panel" class="form-panel active">
+                <form id="login-form">
+                    <div class="input-group">
+                        <label class="input-label" for="login-username">사용자 아이디 (ID)</label>
+                        <div class="input-wrapper">
+                            <input class="auth-input" type="text" id="login-username" placeholder="아이디를 입력하세요" required autocomplete="username">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="login-password">안전 비밀번호 (Password)</label>
+                        <div class="input-wrapper">
+                            <input class="auth-input" type="password" id="login-password" placeholder="비밀번호를 입력하세요" required autocomplete="current-password">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-submit" type="submit" id="login-btn">
+                        <span>안심 로그인 시동</span>
+                        <i class="fa-solid fa-shield-heart"></i>
+                    </button>
+                </form>
+                
+                <div class="switch-panel">
+                    아직 회원이 아니신가요? 
+                    <span class="switch-link" onclick="toggleForm('signup')">보호회원 가입하기</span>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 [Form Panel 2: 회원가입]
+                 ========================================== -->
+            <div id="signup-panel" class="form-panel">
+                <form id="signup-form">
+                    <div class="input-group">
+                        <label class="input-label" for="signup-name">실명 이름 (Full Name)</label>
+                        <div class="input-wrapper">
+                            <input class="auth-input" type="text" id="signup-name" placeholder="환자 또는 의학 사용자 실명" required>
+                            <i class="fa-solid fa-signature"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="signup-username">새 사용자 아이디 (ID)</label>
+                        <div class="input-wrapper">
+                            <input class="auth-input" type="text" id="signup-username" placeholder="로그인에 사용할 신규 아이디" required autocomplete="username">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="signup-password">비밀번호 (보안 암호화)</label>
+                        <div class="input-wrapper">
+                            <input class="auth-input" type="password" id="signup-password" placeholder="비밀번호 (보안 적용 저장)" required autocomplete="new-password">
+                            <i class="fa-solid fa-lock-open"></i>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-submit" type="submit" id="signup-btn">
+                        <span>보호회원 등록하기</span>
+                        <i class="fa-solid fa-circle-check"></i>
+                    </button>
+                </form>
+                
+                <div class="switch-panel">
+                    이미 보호회원 계정이 있으신가요? 
+                    <span class="switch-link" onclick="toggleForm('login')">기존 계정 로그인</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- [글로벌 토스트 컴포넌트] -->
+    <div id="toast" class="toast-container">
+        <span id="toast-icon" class="toast-icon"><i class="fa-solid fa-info-circle"></i></span>
+        <span id="toast-message" class="toast-message">알림 메시지</span>
+    </div>
+
+
+    <!-- ==========================================
+         [Frontend JavaScript - Logic & Integration]
+         ========================================== -->
+    <script>
+        // Intelligent backend host detection to resolve Failed to fetch if opened via file:// or other ports
+        const API_BASE = (location.protocol === "file:" || !location.port || location.port !== "3000") 
+            ? "http://localhost:3000" 
+            : "";
+
+        // 페이지 로딩 시 기존 세션 유무 체크 및 자동 리다이렉트
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUser = localStorage.getItem("currentUser");
+            if (currentUser) {
+                showToast("기존에 안전 로그인된 세션이 발견되었습니다. 대시보드로 이동합니다.", "success");
+                setTimeout(() => {
+                    location.href = "dashboard.html";
+                }, 1000);
+            }
+        });
+
+        // 1. 폼 토글 인터랙션 함수
+        function toggleForm(panelType) {
+            const loginPanel = document.getElementById("login-panel");
+            const signupPanel = document.getElementById("signup-panel");
+
+            if (panelType === "signup") {
+                loginPanel.classList.remove("active");
+                setTimeout(() => {
+                    signupPanel.classList.add("active");
+                }, 150);
+            } else {
+                signupPanel.classList.remove("active");
+                setTimeout(() => {
+                    loginPanel.classList.add("active");
+                }, 150);
+            }
+        }
+
+        // 2. 프리미엄 토스트 알림창 출력 함수
+        function showToast(message, type = "info") {
+            const toast = document.getElementById("toast");
+            const toastIcon = document.getElementById("toast-icon");
+            const toastMsg = document.getElementById("toast-message");
+
+            // 타입별 디자인 변경
+            if (type === "success") {
+                toastIcon.className = "toast-icon success";
+                toastIcon.innerHTML = `<i class="fa-solid fa-heart-shield"></i>`;
+            } else if (type === "error") {
+                toastIcon.className = "toast-icon error";
+                toastIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+            } else {
+                toastIcon.className = "toast-icon info";
+                toastIcon.innerHTML = `<i class="fa-solid fa-circle-info"></i>`;
+            }
+
+            toastMsg.innerText = message;
+            toast.classList.add("show");
+
+            // 3초 후 자동 소멸
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        // 3. 백엔드 연동: 회원가입 서브밋 핸들러 (API 경로 수정 연동 완료)
+        document.getElementById("signup-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById("signup-name").value.trim();
+            const username = document.getElementById("signup-username").value.trim();
+            const password = document.getElementById("signup-password").value;
+            const signupBtn = document.getElementById("signup-btn");
+
+            // 로딩 상태 피드백 적용
+            signupBtn.disabled = true;
+            signupBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 회원 가입 심사 중...`;
+
+            try {
+                // 💡 [버그 해결]: 기존 /api/signup 경로에서 백엔드 라우트와 동일한 /api/auth/signup 경로로 완벽하게 갱신 조정
+                const response = await fetch(`${API_BASE}/api/auth/signup`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password, name })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "회원가입 처리 중 알 수 없는 오류가 발생했습니다.");
+                }
+
+                showToast("안심 케어 보호회원 가입이 완료되었습니다! 로그인을 진행해 주세요.", "success");
+                
+                // 가입 성공 후 입력 창 초기화 및 로그인 폼으로 스무스 전환
+                document.getElementById("signup-form").reset();
+                setTimeout(() => {
+                    toggleForm("login");
+                    document.getElementById("login-username").value = username;
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            } finally {
+                signupBtn.disabled = false;
+                signupBtn.innerHTML = `<span>보호회원 등록하기</span> <i class="fa-solid fa-circle-check"></i>`;
+            }
+        });
+
+        // 4. 백엔드 연동: 로그인 서브밋 핸들러 (API 경로 수정 연동 완료)
+        document.getElementById("login-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value;
+            const loginBtn = document.getElementById("login-btn");
+
+            // 로딩 상태 피드백 적용
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 암호화 세션 확인 중...`;
+
+            try {
+                // 💡 [버그 해결]: 기존 /api/login 경로에서 백엔드 라우트와 동일한 /api/auth/login 경로로 완벽하게 갱신 조정
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "로그인 자격 증명이 유효하지 않거나 일치하지 않습니다.");
+                }
+
+                showToast(`반갑습니다, ${data.user.name} 환자(보호자)님. 지능형 안전분석 대시보드로 진입합니다.`, "success");
+
+                // 로그인 성공 시 세션을 로컬스토리지에 안전하게 기록
+                localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+                // 대시보드로 이동
+                setTimeout(() => {
+                    location.href = "dashboard.html";
+                }, 1500);
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = `<span>안심 로그인 시동</span> <i class="fa-solid fa-shield-heart"></i>`;
+            }
+        });
+    </script>
+</body>
+</html>

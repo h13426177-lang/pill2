@@ -1,0 +1,4463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeDrug AI - 프리미엄 약물 부작용 예측 대시보드</title>
+    
+    <!-- 구글 폰트 및 아이콘 세트 로드 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 네온 원형 차트를 위한 Chart.js 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 프리미엄 의료기관 PDF 리포트 출력을 위한 html2pdf.js 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* ==========================================================================
+           [💡 신규 고도화: 시니어용 글자 조정 클래스들]
+           ========================================================================== */
+        body {
+            transition: font-size 0.25s ease-out;
+        }
+        body.font-scale-medium {
+            font-size: 110%;
+        }
+        body.font-scale-medium .timeline-med-name, 
+        body.font-scale-medium .panel-title,
+        body.font-scale-medium .form-label {
+            font-size: 1.15rem;
+        }
+        body.font-scale-medium .timeline-desc,
+        body.font-scale-medium .kfda-td {
+            font-size: 1rem;
+        }
+
+        body.font-scale-large {
+            font-size: 125%;
+        }
+        body.font-scale-large .timeline-med-name, 
+        body.font-scale-large .panel-title,
+        body.font-scale-large .form-label {
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+        body.font-scale-large .timeline-desc,
+        body.font-scale-large .kfda-td {
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+        body.font-scale-large .form-input {
+            height: 52px;
+            font-size: 1.1rem;
+        }
+
+        /* ==========================================================================
+           [💡 신규 고도화: 낮 테마 (라이트 모드) 전용 토큰 변수들]
+           ========================================================================== */
+        body.light-theme {
+            --bg-dark: #f1f5f9;
+            --bg-card: #ffffff;
+            --panel-border: rgba(15, 23, 42, 0.08);
+            
+            --color-primary: #4f46e5;    /* 보다 또렷하고 눈에 잘 들어오는 인디고 */
+            --color-secondary: #7c3aed;  /* 선명한 퍼플 */
+            --color-accent: #3b82f6;
+            
+            --text-main: #0f172a;        /* 짙은 슬레이트 차콜 */
+            --text-muted: #64748b;
+            
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+        }
+
+        body.light-theme .sidebar {
+            background: #ffffff;
+            border-right: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        body.light-theme .card {
+            background: #ffffff;
+            border: 1px solid rgba(15, 23, 42, 0.06);
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+        }
+
+        body.light-theme .form-input {
+            background: #f8fafc;
+            border-color: rgba(15, 23, 42, 0.12);
+            color: #0f172a;
+        }
+
+        body.light-theme .form-input:focus {
+            border-color: var(--color-primary);
+            background: #ffffff;
+        }
+
+        body.light-theme .user-name {
+            color: #0f172a;
+        }
+
+        body.light-theme .logo-text {
+            background: linear-gradient(135deg, #0f172a 30%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-theme .pillip-chat-board {
+            background: #ffffff;
+            border-color: rgba(15, 23, 42, 0.1);
+            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.1);
+        }
+
+        body.light-theme .pillip-main-name {
+            color: #0f172a;
+        }
+
+        body.light-theme .pillip-sub-name {
+            color: #64748b;
+        }
+
+        body.light-theme .panel-title {
+            color: #0f172a;
+        }
+
+        body.light-theme .panel-subtitle {
+            color: #64748b;
+        }
+
+        /* [💡 낮 테마 가독성 극대화 오버라이드 세트] */
+        body.light-theme .timeline-card {
+            background: #ffffff !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.light-theme .timeline-card:hover {
+            border-color: rgba(99, 102, 241, 0.25) !important;
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08) !important;
+        }
+        body.light-theme .timeline-med-name {
+            color: #0f172a !important;
+        }
+        body.light-theme .timeline-desc {
+            color: #334155 !important;
+        }
+        body.light-theme .timeline-date {
+            color: #475569 !important;
+        }
+        body.light-theme .timeline-date span {
+            color: #475569 !important;
+        }
+        
+        body.light-theme .pharmacology-panel {
+            background: #f8fafc !important;
+            border-color: rgba(15, 23, 42, 0.06) !important;
+        }
+        body.light-theme .pharmacology-panel span {
+            color: #1e293b !important;
+        }
+        body.light-theme .pharmacology-panel div {
+            color: #334155 !important;
+        }
+        body.light-theme .pharmacology-panel div div {
+            color: #475569 !important;
+        }
+        body.light-theme .pharmacology-panel .fa-droplet {
+            color: var(--color-primary) !important;
+        }
+        body.light-theme .pharmacology-panel div[style*="width: 100%"] {
+            background: rgba(15, 23, 42, 0.05) !important;
+            border-color: rgba(15, 23, 42, 0.03) !important;
+        }
+        
+        body.light-theme .gauge-container {
+            background: #e2e8f0 !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+        body.light-theme .gauge-score-num {
+            color: #0f172a !important;
+        }
+        
+        body.light-theme .kfda-table {
+            background: #f8fafc !important;
+            border-color: rgba(15, 23, 42, 0.06) !important;
+        }
+        body.light-theme .kfda-th {
+            background: rgba(99, 102, 241, 0.05) !important;
+            color: #4f46e5 !important;
+            border-right-color: rgba(15, 23, 42, 0.06) !important;
+        }
+        body.light-theme .kfda-td {
+            color: #1e293b !important;
+        }
+        body.light-theme .accordion-trigger-btn {
+            background: #f1f5f9 !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+            color: #475569 !important;
+        }
+        body.light-theme .accordion-trigger-btn:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        
+        body.light-theme .traffic-light-card {
+            background: #ffffff !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+        }
+        body.light-theme .report-3lines {
+            background: #ffffff !important;
+            border-color: rgba(15, 23, 42, 0.08) !important;
+        }
+        body.light-theme .report-3lines-title {
+            color: #0f172a !important;
+        }
+        body.light-theme .report-list-item {
+            color: #334155 !important;
+        }
+        body.light-theme .btn-mini-consult {
+            background: rgba(124, 58, 237, 0.08) !important;
+            color: #7c3aed !important;
+            border-color: rgba(124, 58, 237, 0.15) !important;
+        }
+        body.light-theme .btn-mini-consult:hover {
+            background: #7c3aed !important;
+            color: #ffffff !important;
+        }
+
+        /* ==========================================================================
+           [Core Design System - Tokens & Root variables]
+           ========================================================================== */
+        :root {
+            --bg-dark: #070913;
+            --bg-card: rgba(17, 20, 36, 0.55);
+            --panel-border: rgba(129, 140, 248, 0.08);
+            
+            --color-primary: #818cf8;    /* 감각적인 네온 인디고 */
+            --color-secondary: #c084fc;  /* 세련된 네온 퍼플 */
+            --color-accent: #6366f1;     /* 하이라이트 블루 */
+            
+            --text-main: #f1f5f9;
+            --text-muted: #64748b;
+            
+            --status-safe: #10b981;      /* 안전: 초록 에메랄드 */
+            --status-warn: #fbbf24;      /* 주의: 노랑 앰버 */
+            --status-danger: #f87171;    /* 위험: 빨강 로즈 */
+            
+            --transition-smooth: all 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            
+            --glow-indigo: 0 0 20px rgba(129, 140, 248, 0.25);
+            --glow-safe: 0 0 15px rgba(16, 185, 129, 0.4);
+            --glow-warn: 0 0 15px rgba(251, 191, 36, 0.4);
+            --glow-danger: 0 0 15px rgba(248, 113, 113, 0.4);
+        }
+
+        /* 스크롤바 커스터마이징 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 17, 28, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(129, 140, 248, 0.15);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(129, 140, 248, 0.3);
+        }
+
+        /* 기본 리셋 마크업 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 프리미엄 백그라운드 앰비언트 글로우 이펙트 */
+        .ambient-glow {
+            position: fixed;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(192, 132, 252, 0) 70%);
+            pointer-events: none;
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        .glow-1 { top: -100px; left: 10%; }
+        .glow-2 { bottom: -150px; right: 5%; }
+
+
+        /* ==========================================================================
+           [SPA Left Sidebar Navigation Layout]
+           ========================================================================== */
+        .sidebar {
+            width: 280px;
+            background: rgba(10, 12, 22, 0.7);
+            border-right: 1px solid var(--panel-border);
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 45px;
+            padding-left: 8px;
+        }
+
+        .logo-icon {
+            font-size: 26px;
+            color: var(--color-primary);
+            filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.5));
+            animation: floatSlow 2s ease-in-out infinite alternate;
+        }
+
+        .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fff 30%, var(--color-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .sidebar-user {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: #fff;
+            font-size: 18px;
+            box-shadow: var(--glow-indigo);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            border: 1px solid transparent;
+        }
+
+        .menu-item:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .menu-item.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(192, 132, 252, 0.05));
+            border-color: rgba(129, 140, 248, 0.15);
+            box-shadow: inset 0 0 12px rgba(129, 140, 248, 0.05);
+        }
+
+        .menu-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .btn-logout {
+            margin-top: auto;
+            background: rgba(248, 113, 113, 0.05);
+            border: 1px solid rgba(248, 113, 113, 0.1);
+            color: #f87171;
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-logout:hover {
+            background: #f87171;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(248, 113, 113, 0.3);
+            border-color: #f87171;
+        }
+
+
+        /* ==========================================================================
+           [SPA Right Dashboard Board Panels]
+           ========================================================================== */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 50px 60px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            max-width: 1300px;
+        }
+
+        .panel-header {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .panel-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* SPA 탭 패널 컨텐츠 기본 상태 제어 */
+        .tab-panel {
+            display: none;
+            animation: slideUp 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* 공통 프리미엄 글라스모피즘 카드 위젯 */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 35px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+
+        /* ==========================================================================
+           [Form Controls - Input, Label, Textarea]
+           ========================================================================== */
+        .form-grid-profile {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .form-group-full {
+            grid-column: span 2;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 15px;
+            transition: var(--transition-smooth);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            background: rgba(129, 140, 248, 0.05);
+            box-shadow: var(--glow-indigo);
+        }
+
+        /* 직접 타이핑 입력박스 아래 고속 식약처 추천 박스 */
+        .search-suggestions-box {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: rgba(15, 17, 28, 0.95);
+            border: 1px solid rgba(129, 140, 248, 0.3);
+            border-radius: 12px;
+            z-index: 1000;
+            max-height: 250px;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .search-suggestions-box.show {
+            display: block;
+        }
+
+        .suggestion-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #e2e8f0;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: var(--transition-smooth);
+        }
+
+        .suggestion-item:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(192, 132, 252, 0.05));
+            color: #fff;
+        }
+
+        /* 💡 식약처 부분 일치 검색 전용 뱃지 스타일 */
+        .candidate-badge {
+            background: rgba(129, 140, 248, 0.08);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .candidate-badge:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(192, 132, 252, 0.15));
+            border-color: var(--color-primary);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(129, 140, 248, 0.15);
+        }
+
+        .candidate-badge:active {
+            transform: translateY(0);
+        }
+
+
+        /* ==========================================================================
+           [Core UI Components - Buttons]
+           ========================================================================== */
+        .btn-save {
+            background: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 28px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            transition: var(--transition-smooth);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .btn-save:active {
+            transform: translateY(0);
+        }
+
+
+        /* ==========================================================================
+           [SPA Panel Component: 1. 복용 히스토리 보드]
+           ========================================================================== */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 7px;
+            width: 2px;
+            background: var(--panel-border);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -30px;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            border: 4px solid var(--bg-dark);
+            z-index: 2;
+            transition: var(--transition-smooth);
+        }
+
+        /* 신호등 연동 도트 램프 */
+        .timeline-item.안전 .timeline-dot {
+            background: var(--status-safe);
+            box-shadow: var(--glow-safe);
+        }
+
+        .timeline-item.주의 .timeline-dot {
+            background: var(--status-warn);
+            box-shadow: var(--glow-warn);
+        }
+
+        .timeline-item.위험 .timeline-dot {
+            background: var(--status-danger);
+            box-shadow: var(--glow-danger);
+        }
+
+        .timeline-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: var(--transition-smooth);
+        }
+
+        .timeline-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .timeline-med-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .timeline-action-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-badge {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        .timeline-badge.안전 {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--status-safe);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .timeline-badge.주의 {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--status-warn);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+        }
+
+        .timeline-badge.위험 {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--status-danger);
+            border: 1px solid rgba(248, 113, 113, 0.25);
+        }
+
+        /* ⏰ 알림 예약 추가 버튼 */
+        .btn-add-alarm-trigger {
+            background: rgba(129, 140, 248, 0.1);
+            color: var(--color-primary);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-add-alarm-trigger:hover {
+            background: var(--color-accent);
+            color: #fff;
+            border-color: var(--color-accent);
+            box-shadow: var(--glow-indigo);
+        }
+
+        .timeline-date {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .timeline-desc {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #9ca3af;
+        }
+
+
+        /* ==========================================================================
+           [SPA Panel Component: 2. 신규 약물 등록 - 처방전 비전 비디오 드래그앤드롭]
+           ========================================================================== */
+        .register-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .file-upload-zone {
+            border: 2px dashed rgba(129, 140, 248, 0.3);
+            border-radius: 20px;
+            padding: 50px 30px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.01);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .file-upload-zone:hover, .file-upload-zone.active {
+            border-color: var(--color-primary);
+            background: rgba(129, 140, 248, 0.04);
+            box-shadow: inset 0 0 20px rgba(129, 140, 248, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 45px;
+            color: var(--color-primary);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 4px 10px rgba(129, 140, 248, 0.3));
+        }
+
+        .upload-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .upload-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .uploaded-file-info {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 14px 20px;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .uploaded-file-info.show {
+            display: flex;
+        }
+
+        .file-detail {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--status-safe);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-remove-file {
+            background: transparent;
+            border: none;
+            color: #f87171;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-remove-file:hover {
+            color: #f87171;
+            transform: scale(1.15);
+        }
+
+        .divider-or {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .divider-or::before, .divider-or::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .divider-or:not(:empty)::before { margin-right: 1.5em; }
+        .divider-or:not(:empty)::after { margin-left: 1.5em; }
+
+
+        /* ==========================================================================
+           [SPA Panel Component: 3. AI 종합 위험도 리포트]
+           ========================================================================== */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        /* 세련된 신호등 물리장치 모사 카드 */
+        .traffic-light-card {
+            background: rgba(10, 11, 18, 0.6);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .traffic-light-box {
+            width: 70px;
+            background: #1e1e2d;
+            border-radius: 35px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.8), inset 0 2px 10px rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.02);
+            margin-bottom: 25px;
+        }
+
+        .light-bulb {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background-color: #2a2a35;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+            transition: var(--transition-smooth);
+        }
+
+        .light-bulb.red.active {
+            background-color: var(--status-danger);
+            box-shadow: var(--glow-danger);
+        }
+
+        .light-bulb.yellow.active {
+            background-color: var(--status-warn);
+            box-shadow: var(--glow-warn);
+        }
+
+        .light-bulb.green.active {
+            background-color: var(--status-safe);
+            box-shadow: var(--glow-safe);
+        }
+
+        .traffic-status-label {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .traffic-status-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .gauge-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .gauge-score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .gauge-score-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gauge-score-num {
+            font-size: 40px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .gauge-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+        }
+
+        .gauge-bar {
+            width: 0%;
+            height: 100%;
+            border-radius: 10px;
+            background: var(--color-primary);
+            box-shadow: var(--glow-indigo);
+            transition: width 1.2s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s;
+        }
+
+        .report-3lines {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 10px;
+        }
+
+        .report-3lines-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            color: #fff;
+        }
+
+        .report-3lines-title i {
+            color: var(--color-primary);
+            filter: drop-shadow(0 2px 8px rgba(129, 140, 248, 0.4));
+        }
+
+        .report-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .report-list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .report-list-item i {
+            font-size: 16px;
+            margin-top: 3px;
+        }
+
+
+        /* ==========================================================================
+           [SPA Panel Component: 4. 복약 알림 달력]
+           ========================================================================== */
+        .calendar-wrapper {
+            user-select: none;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 0 10px;
+        }
+
+        .calendar-month-year {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .calendar-nav-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+        }
+
+        .calendar-nav-btn:hover {
+            background: var(--color-accent);
+            border-color: var(--color-accent);
+            box-shadow: var(--glow-indigo);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+
+        .day-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--panel-border);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1 / 1.1; /* 모바일/배지 유연성을 위해 약간 세로로 늘림 */
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        .calendar-day:hover:not(.empty) {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(129, 140, 248, 0.3);
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            border-color: transparent;
+            cursor: default;
+        }
+
+        .day-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            z-index: 2;
+        }
+
+        .calendar-day:hover .day-num {
+            color: #fff;
+        }
+
+        /* 복약 완료 체크 표시 상태 */
+        .calendar-day.completed {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.02));
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .calendar-day.completed .day-num {
+            color: var(--status-safe) !important;
+            font-weight: 800;
+        }
+
+        .completed-mark {
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--status-safe);
+            font-size: 14px;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .calendar-day.completed .completed-mark {
+            display: block;
+        }
+
+        /* 알람 스케줄 배지 레이아웃 (날짜 셀 내장) */
+        .calendar-alarm-badges-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 100%;
+            margin-top: 5px;
+            z-index: 5;
+        }
+
+        .calendar-badge-item {
+            background: rgba(129, 140, 248, 0.12);
+            border: 1px solid rgba(129, 140, 248, 0.25);
+            color: var(--color-primary);
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2px;
+            width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .calendar-badge-item:hover {
+            background: rgba(129, 140, 248, 0.25);
+            border-color: rgba(129, 140, 248, 0.4);
+            color: #fff;
+        }
+
+        .calendar-badge-delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 9px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            transition: var(--transition-smooth);
+        }
+
+        .calendar-badge-delete-btn:hover {
+            background: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+
+        /* ==========================================================================
+           [Core UI Components - Modal Settings]
+           ========================================================================== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(4, 5, 8, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .alarm-schedule-modal {
+            background: rgba(17, 19, 28, 0.95);
+            border: 1px solid var(--panel-border);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .modal-overlay.active .alarm-schedule-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--panel-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .modal-title i {
+            color: var(--color-primary);
+        }
+
+        .btn-close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .btn-close-modal:hover {
+            color: #fff;
+        }
+
+        .modal-body-form {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+
+        /* ==========================================================================
+           [대형 실시간 사이렌 경고 팝업창 디자인 (UX 추가 요구사항 2)]
+           ========================================================================== */
+        .alarm-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(5, 1, 1, 0.95);
+            z-index: 5000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .alarm-alert-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 쿵쾅쿵쾅 진동 효과 애니메이션 */
+        .alarm-alert-icon-box {
+            font-size: 80px;
+            color: var(--status-danger);
+            margin-bottom: 25px;
+            animation: pulseWarning 1.2s infinite alternate;
+            filter: drop-shadow(0 0 30px rgba(248, 113, 113, 0.6));
+        }
+
+        .alarm-alert-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: -0.5px;
+            margin-bottom: 15px;
+        }
+
+        .alarm-alert-medname {
+            font-size: 38px;
+            font-weight: 900;
+            color: #fff;
+            background: linear-gradient(135deg, #f87171, #f43f5e);
+            padding: 15px 40px;
+            border-radius: 20px;
+            box-shadow: var(--glow-danger);
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .alarm-alert-sub {
+            font-size: 15px;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 1.8;
+            max-width: 500px;
+            margin-bottom: 40px;
+        }
+
+        .alarm-alert-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 440px;
+        }
+
+
+        /* ==========================================================================
+           [AI 고속 연산 로딩 상태 화면 (UX 추가 요구사항 1)]
+           ========================================================================== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(5, 5, 8, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 4000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .loading-spinner-box {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .spinner-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top: 3px solid var(--color-primary);
+            border-bottom: 3px solid var(--color-secondary);
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .spinner-icon {
+            font-size: 40px;
+            color: var(--color-primary);
+            filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.5));
+            animation: floatSlow 2s ease-in-out infinite alternate;
+        }
+
+        .loading-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .loading-subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+
+        /* ==========================================================================
+           [글로벌 고품격 알림 창 토스트 컴포넌트 (UX 추가 요구사항 3)]
+           ========================================================================== */
+        .toast-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(15, 17, 26, 0.9);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 16px 28px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s;
+        }
+
+        .toast-container.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .toast-icon.success { color: var(--status-safe); }
+        .toast-icon.error { color: var(--status-danger); }
+        .toast-icon.info { color: var(--color-primary); }
+
+        .toast-message {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+
+        /* ==========================================================================
+           [신규 고도화 디자인: 1. AI 약사 비서 'Pillip(필립)' 플로팅 위젯]
+           ========================================================================== */
+        .pillip-floating-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 3500;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 15px;
+        }
+
+        .pillip-bubble-trigger {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-accent), var(--color-secondary));
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4), 0 0 15px rgba(192, 132, 252, 0.2);
+            transition: var(--transition-smooth);
+            animation: pulseWidget 2s infinite;
+        }
+
+        .pillip-bubble-trigger:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 35px rgba(99, 102, 241, 0.6), 0 0 25px rgba(192, 132, 252, 0.4);
+        }
+
+        .pillip-bubble-trigger i {
+            animation: floatSlow 1.5s ease-in-out infinite alternate;
+        }
+
+        .pillip-chat-board {
+            width: 380px;
+            height: 520px;
+            background: rgba(13, 15, 24, 0.95);
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.7);
+            transform: translateY(30px) scale(0.9);
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition-smooth);
+        }
+
+        .pillip-chat-board.active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .pillip-chat-header {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(192, 132, 252, 0.05));
+            border-bottom: 1px solid var(--panel-border);
+            padding: 18px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pillip-chat-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pillip-profile-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #c084fc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(129, 140, 248, 0.4);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .pillip-chat-title-texts {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pillip-main-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        .pillip-sub-name {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pillip-sub-name .online-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--status-safe);
+            box-shadow: 0 0 6px var(--status-safe);
+        }
+
+        .pillip-chat-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .pillip-chat-close-btn:hover {
+            color: #f87171;
+        }
+
+        .pillip-chat-messages-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .pillip-msg-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            max-width: 85%;
+        }
+
+        .pillip-msg-row.received {
+            align-self: flex-start;
+        }
+
+        .pillip-msg-row.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .pillip-msg-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        .received .pillip-msg-bubble {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--panel-border);
+            color: #e2e8f0;
+            border-top-left-radius: 4px;
+        }
+
+        .sent .pillip-msg-bubble {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(99, 102, 241, 0.5));
+            border: 1px solid rgba(129, 140, 248, 0.2);
+            color: #fff;
+            border-top-right-radius: 4px;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.15);
+        }
+
+        .pillip-typing-dot-box {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 0;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            animation: bounceTyping 1.2s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .pillip-chat-input-area {
+            border-top: 1px solid var(--panel-border);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(10, 11, 18, 0.4);
+        }
+
+        .pillip-chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+
+        .pillip-chat-input:focus {
+            border-color: var(--color-primary);
+            background: rgba(129, 140, 248, 0.04);
+        }
+
+        .pillip-chat-send-btn {
+            background: var(--color-accent);
+            border: none;
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 4px 10px rgba(99,102,241,0.3);
+        }
+
+        .pillip-chat-send-btn:hover {
+            background: var(--color-secondary);
+            box-shadow: 0 4px 12px rgba(192,132,252,0.4);
+            transform: scale(1.05);
+        }
+
+
+        /* ==========================================================================
+           [신규 고도화 디자인: 2. 아코디언 상세 정보창 레이아웃 & 테이블 스타일]
+           ========================================================================== */
+        .accordion-trigger-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+            margin-top: 10px;
+        }
+
+        .accordion-trigger-btn:hover {
+            background: rgba(255,255,255,0.06);
+            color: #fff;
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            margin-top: 0;
+            opacity: 0;
+        }
+
+        .accordion-content.open {
+            max-height: 1200px; /* 상세 텍스트가 풍부할 경우를 대비하여 넉넉히 설정 */
+            margin-top: 15px;
+            opacity: 1;
+        }
+
+        .kfda-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(10, 11, 18, 0.3);
+            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 12px;
+            overflow: hidden;
+            font-size: 13px;
+        }
+
+        .kfda-table tr {
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .kfda-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .kfda-th {
+            background: rgba(129, 140, 248, 0.05);
+            color: var(--color-primary);
+            font-weight: 700;
+            width: 120px;
+            padding: 12px 15px;
+            text-align: left;
+            vertical-align: top;
+            border-right: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .kfda-td {
+            padding: 12px 15px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .accordion-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 5px 0;
+        }
+
+        .btn-mini-consult {
+            background: rgba(192, 132, 252, 0.1);
+            color: var(--color-secondary);
+            border: 1px solid rgba(192, 132, 252, 0.2);
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition-smooth);
+        }
+
+        .btn-mini-consult:hover {
+            background: var(--color-secondary);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(192,132,252,0.3);
+        }
+
+
+        /* ==========================================================================
+           [신규 고도화 디자인: 3. Chart.js 게이지 차트 레이아웃 디자인]
+           ========================================================================== */
+        .chart-gauge-wrapper {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        .chart-gauge-container {
+            width: 240px;
+            height: 150px;
+            position: relative;
+        }
+
+        .chart-score-overlay {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-score-unit {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+        /* ==========================================================================
+           [Animations - Core Transitions]
+           ========================================================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes floatSlow {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
+        }
+
+        @keyframes bounceTyping {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        @keyframes pulseWarning {
+            0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(248, 113, 113, 0.4)); }
+            100% { transform: scale(1.08); filter: drop-shadow(0 0 35px rgba(248, 113, 113, 0.8)); }
+        }
+
+        @keyframes pulseWidget {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+
+        /* ==========================================================================
+           [Responsive Board Design - Media Queries]
+           ========================================================================== */
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: 30px;
+            }
+            .form-grid-profile {
+                grid-template-columns: 1fr;
+            }
+            .form-group-full {
+                grid-column: span 1;
+            }
+            .report-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--panel-border);
+                padding: 20px;
+            }
+            .sidebar-logo {
+                margin-bottom: 20px;
+            }
+            .sidebar-user {
+                display: none; /* 모바일 헤더에선 단순 로고 위주 노출 */
+            }
+            .sidebar-menu {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            .menu-item {
+                padding: 10px 14px;
+                font-size: 13px;
+                flex: 1 1 auto;
+                justify-content: center;
+            }
+            .sidebar .btn-logout {
+                display: none; /* 모바일 메뉴바 가독성을 위해 기존 로그아웃 제거 */
+            }
+            .mobile-only-logout {
+                display: flex;
+                margin-top: 15px;
+                width: 100%;
+                justify-content: center;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .pillip-chat-board {
+                width: calc(100vw - 40px);
+                height: 450px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 엠비언트 하이라이트 글로우 효과 레이어 -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <!-- ==========================================
+         [SPA 좌측 사이드바 레이아웃]
+         ========================================== -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <i class="fa-solid fa-shield-virus logo-icon"></i>
+            <span class="logo-text">SafeDrug AI</span>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" id="user-avatar-initial">S</div>
+            <div class="user-info">
+                <span class="user-name" id="user-display-name">홍길동 님</span>
+                <span class="user-email" id="user-display-email">@gildong</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu">
+            <div class="menu-item active" data-tab="mypage" onclick="switchTab('mypage')">
+                <i class="fa-solid fa-address-card"></i>
+                <span>마이페이지</span>
+            </div>
+            <div class="menu-item" data-tab="history" onclick="switchTab('history')">
+                <i class="fa-solid fa-list-check"></i>
+                <span>복용 히스토리</span>
+            </div>
+            <div class="menu-item" data-tab="register" onclick="switchTab('register')">
+                <i class="fa-solid fa-circle-plus"></i>
+                <span>신규 약물 등록</span>
+            </div>
+            <div class="menu-item" data-tab="report" onclick="switchTab('report')">
+                <i class="fa-solid fa-file-medical"></i>
+                <span>AI 안전 리포트</span>
+            </div>
+            <div class="menu-item" data-tab="calendar" onclick="switchTab('calendar')">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>복약 알림 달력</span>
+            </div>
+        </div>
+
+        <!-- 모바일 뷰 전용 로그아웃 공간 -->
+        <div class="mobile-only-logout" id="mobile-logout-btn" style="display: none;">
+            <button class="btn-logout" onclick="handleLogout()" style="width: 100%;">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>로그아웃</span>
+            </button>
+        </div>
+
+        <!-- PC 기본 로그아웃 버튼 -->
+        <button class="btn-logout" id="pc-logout-btn" onclick="handleLogout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>로그아웃</span>
+        </button>
+    </nav>
+
+
+    <!-- ==========================================
+         [SPA 우측 메인 콘텐츠 대시보드 보드]
+         ========================================== -->
+    <main class="main-content">
+        
+        <!-- 동적 타이틀 헤더 정보 -->
+        <header class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid var(--panel-border); padding-bottom: 15px;">
+            <div>
+                <h1 class="panel-title" id="panel-main-title">마이페이지</h1>
+                <p class="panel-subtitle" id="panel-sub-title">안전한 약물 분석을 위해 개인 건강 프로필 정보를 최신 상태로 유지하세요.</p>
+            </div>
+            
+            <!-- 💡 [신규 고도화: 시니어 폰트 배율 및 낮/밤 테마 컨트롤 그룹] -->
+            <div class="senior-theme-control-bar" style="display: flex; align-items: center; gap: 10px;">
+                <!-- 낮/밤 테마 스위치 -->
+                <button onclick="toggleTheme()" class="btn-theme-toggle" id="btn-theme-toggle" title="낮/밤 밝은 테마로 바꾸기" style="background: rgba(129, 140, 248, 0.1); border: 1px solid rgba(129, 140, 248, 0.2); color: var(--color-primary); padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                    <i class="fa-solid fa-sun" id="theme-icon"></i> <span id="theme-text">낮 테마</span>
+                </button>
+                
+                <!-- 글자 크기 조정 스위치 그룹 -->
+                <div class="font-scale-group" style="display: flex; background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); border-radius: 10px; padding: 2px;">
+                    <button onclick="changeFontScale('standard')" class="btn-font-scale" id="btn-scale-standard" style="background: var(--color-primary); border: none; color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="기본 글자 크기">가(기본)</button>
+                    <button onclick="changeFontScale('medium')" class="btn-font-scale" id="btn-scale-medium" style="background: transparent; border: none; color: var(--text-muted); padding: 6px 12px; font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="중간 글자 크기">가+(크게)</button>
+                    <button onclick="changeFontScale('large')" class="btn-font-scale" id="btn-scale-large" style="background: transparent; border: none; color: var(--text-muted); padding: 6px 12px; font-size: 15px; font-weight: 900; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="돋보기 글자 크기">가++(아주크게)</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- ==========================================================================
+             [SPA PANEL 1: 마이페이지 - 체질 민감 프로필 관리]
+             ========================================================================== -->
+        <section id="panel-mypage" class="tab-panel active">
+            <!-- 🔗 [국민건강보험공단 공식 검진결과 연계 배너] -->
+            <div class="card" style="border-left: 5px solid var(--color-primary); background: rgba(129, 140, 248, 0.05); margin-bottom: 20px; padding: 20px; border-radius: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="font-size: 16.5px; font-weight: 800; color: var(--color-primary); margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-hospital-user"></i>
+                            <span>국민건강보험공단 건강검진 결과가 있으신가요?</span>
+                        </h4>
+                        <p style="font-size: 13px; color: var(--text-muted); margin: 0; line-height: 1.5; font-weight: 600;">
+                            공식 사이트에서 결과를 확인 후 복사하여 아래 AI 분석창에 붙여넣으시면 내 건강 프로필이 스마트하게 즉시 채워집니다.
+                        </p>
+                    </div>
+                    <a href="https://www.nhis.or.kr/nhis/healthin/wbhac04000m01.do" target="_blank" rel="noopener noreferrer" 
+                       style="background: var(--color-primary); color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 12px; font-size: 13.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(129, 140, 248, 0.25); transition: all 0.2s;">
+                        <span>공단 검진 결과 조회 바로가기</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 🤖 [건강검진표 AI 고속 간편 붙여넣기 및 이미지 사진 업로드 통합 컴포넌트] -->
+            <div class="card" style="margin-bottom: 20px; border: 1px dashed var(--color-primary-light); background: rgba(255, 255, 255, 0.01);">
+                <h3 class="report-3lines-title" style="margin-top: 0; margin-bottom: 12px; font-size: 15.5px; font-weight: 800; color: var(--color-primary-light); display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>🤖 AI 건강검진표 초고속 자동 연동</span>
+                </h3>
+                <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 15px; font-weight: 600;">
+                    국민건강보험공단 또는 병원 검진결과를 가장 편하신 방법으로 연동해 보세요. 인공지능이 각 항목에 수치를 쏙쏙 자동으로 넣어 드립니다!
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                    <!-- 방법 1. 사진 업로드 영역 -->
+                    <div style="border: 2px dashed var(--panel-border); border-radius: 12px; padding: 18px; text-align: center; background: rgba(0,0,0,0.12); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fa-solid fa-camera" style="font-size: 32px; color: var(--color-primary);"></i>
+                        <span style="font-size: 13.5px; font-weight: 800; color: var(--text-main);">📸 [방법 1] 검진통보서 사진 올리기</span>
+                        <span style="font-size: 11px; color: var(--text-muted);">휴대폰으로 촬영한 사진이나 캡처 이미지</span>
+                        <input type="file" id="checkup-image-input" accept="image/*" style="display: none;" onchange="handleCheckupImageSelect(this)">
+                        <button type="button" onclick="document.getElementById('checkup-image-input').click()" 
+                                style="background: var(--color-primary); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; margin-top: 5px; box-shadow: 0 2px 8px rgba(129, 140, 248, 0.2); transition: all 0.2s;">
+                            내 컴퓨터/스마트폰 사진 선택
+                        </button>
+                        <span id="selected-image-name" style="font-size: 11.5px; color: var(--color-primary-light); font-weight: 800; display: none; margin-top: 4px; word-break: break-all;">선택된 파일 없음</span>
+                    </div>
+
+                    <!-- 방법 2. 텍스트 복사 붙여넣기 영역 -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--panel-border); border-radius: 12px; padding: 15px; background: rgba(255,255,255,0.01);">
+                        <span style="font-size: 13.5px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-pen-to-square" style="color: var(--color-primary-light);"></i>
+                            <span>✍️ [방법 2] 결과지 텍스트 복사-붙여넣기</span>
+                        </span>
+                        <span style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">공단 사이트 조회 결과를 복사해 아래 칸에 넣어주세요.</span>
+                        <textarea id="checkup-raw-text" class="form-input" rows="4" 
+                                  style="font-family: monospace; font-size: 12px; line-height: 1.4; background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); border-radius: 12px; padding: 10px; resize: vertical;" 
+                                  placeholder="[예시] 신장 158.4cm, 체중 55.2kg, 수축기 혈압 132... 또는 조회 결과 복사본 우클릭 후 붙여넣기 하세요."></textarea>
+                    </div>
+                </div>
+
+                <button type="button" id="btn-parse-checkup" onclick="handleCheckupAiParseAll()" 
+                        style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); border: none; color: #fff; padding: 15px 20px; border-radius: 12px; font-weight: 800; font-size: 14.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(129, 140, 248, 0.2); transition: all 0.2s; width: 100%;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span id="btn-parse-text">🤖 인공지능 건강검진표 자동 완성 분석 시작</span>
+                </button>
+            </div>
+
+            <!-- 📝 [확장된 마이프로필 및 세부 건강 지표 저장 폼] -->
+            <div class="card">
+                <form id="profile-form-element" class="form-grid-profile">
+                    <!-- 기본 인적 정보 -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-id-card"></i> 기본 인적 정보</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-name">사용자 성명</label>
+                        <input type="text" id="profile-name" class="form-input" readonly style="background: rgba(255,255,255,0.01); color: var(--text-muted); cursor: not-allowed;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-age">현재 나이 (만 연령)</label>
+                        <input type="number" id="profile-age" class="form-input" placeholder="만 나이를 입력해 주세요" min="1" max="150" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-illness">기저질환 목록 (Underlying Illnesses)</label>
+                        <input type="text" id="profile-illness" class="form-input" placeholder="예: 고혈압, 제2형 당뇨, 만성 신부전 등 (쉼표로 구분)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-allergies">알레르기 유발 물질 (Allergies)</label>
+                        <input type="text" id="profile-allergies" class="form-input" placeholder="예: 페니실린, 아스피린, 땅콩 등 (쉼표로 구분)">
+                    </div>
+
+                    <!-- 1. 계측 검사 (비만 및 신체 구성) -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-top: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-weight-scale"></i> 신체 계측 및 비만도 지표</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-height">신장 (키, cm)</label>
+                        <input type="number" step="0.1" id="profile-height" class="form-input" placeholder="예: 165.2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-weight">체중 (몸무게, kg)</label>
+                        <input type="number" step="0.1" id="profile-weight" class="form-input" placeholder="예: 62.5">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-bmi">체질량지수 (BMI, kg/㎡)</label>
+                        <input type="number" step="0.1" id="profile-bmi" class="form-input" placeholder="예: 22.8 (자동 계산)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-waist">허리둘레 (cm)</label>
+                        <input type="number" step="0.1" id="profile-waist" class="form-input" placeholder="예: 83.5">
+                    </div>
+
+                    <!-- 2. 순환계 및 혈액/소변 검사 -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-top: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-heart-pulse"></i> 혈압 / 혈당 / 혈액 지표</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-systolic">수축기 혈압 (최고혈압, mmHg)</label>
+                        <input type="number" id="profile-systolic" class="form-input" placeholder="예: 125">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-diastolic">이완기 혈압 (최저혈압, mmHg)</label>
+                        <input type="number" id="profile-diastolic" class="form-input" placeholder="예: 82">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-fastingBloodSugar">공복 혈당 (mg/dL)</label>
+                        <input type="number" id="profile-fastingBloodSugar" class="form-input" placeholder="예: 95">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-hemoglobin">혈색소 (g/dL, 빈혈 지표)</label>
+                        <input type="number" step="0.1" id="profile-hemoglobin" class="form-input" placeholder="예: 14.2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-urineProtein">요단백 (소변 검사)</label>
+                        <select id="profile-urineProtein" class="form-input" style="height: 48px; background: rgba(0,0,0,0.15); color: var(--text-main); border: 1px solid var(--panel-border);">
+                            <option value="정상">정상</option>
+                            <option value="경계">경계 (요단백 미량 의심)</option>
+                            <option value="단백뇨의심">단백뇨 의심 (양성)</option>
+                        </select>
+                    </div>
+
+                    <!-- 3. 신장 및 간 기능 수치 -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-top: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-kidney"></i> 장기 기능 지표 (신장 / 간)</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-creatinine">혈청 크레아티닌 (mg/dL)</label>
+                        <input type="number" step="0.01" id="profile-creatinine" class="form-input" placeholder="예: 0.95">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-egfr">신사구체여과율 (e-GFR, mL/min/1.73㎡)</label>
+                        <input type="number" step="0.1" id="profile-egfr" class="form-input" placeholder="예: 85.2">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-ast">간수치 AST(SGOT) (U/L)</label>
+                        <input type="number" id="profile-ast" class="form-input" placeholder="예: 24">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-alt">간수치 ALT(SGPT) (U/L)</label>
+                        <input type="number" id="profile-alt" class="form-input" placeholder="예: 21">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-gtp">감마지티피 (γ-GTP, U/L)</label>
+                        <input type="number" id="profile-gtp" class="form-input" placeholder="예: 32">
+                    </div>
+
+                    <!-- 4. 이상지질혈증 검사 -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-top: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-stethoscope"></i> 이상지질혈증 (콜레스테롤) 지표</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-totalCholesterol">총 콜레스테롤 (mg/dL)</label>
+                        <input type="number" id="profile-totalCholesterol" class="form-input" placeholder="예: 185">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-hdl">고밀도 콜레스테롤 (HDL, mg/dL)</label>
+                        <input type="number" id="profile-hdl" class="form-input" placeholder="예: 62">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-triglyceride">중성 지방 (mg/dL)</label>
+                        <input type="number" id="profile-triglyceride" class="form-input" placeholder="예: 110">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-ldl">저밀도 콜레스테롤 (LDL, mg/dL)</label>
+                        <input type="number" id="profile-ldl" class="form-input" placeholder="예: 105">
+                    </div>
+
+                    <!-- 5. 어르신 필수 정밀 항목 -->
+                    <div class="form-group-full" style="border-bottom: 1px solid var(--panel-border); padding-bottom: 10px; margin-top: 15px; margin-bottom: 15px;">
+                        <h4 style="margin: 0; font-size: 15px; font-weight: 800; color: var(--color-primary);"><i class="fa-solid fa-brain"></i> 어르신 정밀 질환 케어 지표</h4>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-dementia">치매 인지기능 판정</label>
+                        <select id="profile-dementia" class="form-input" style="height: 48px; background: rgba(0,0,0,0.15); color: var(--text-main); border: 1px solid var(--panel-border);">
+                            <option value="해당없음">미실시 / 해당없음</option>
+                            <option value="정상">정상 (인지 저하 소견 없음)</option>
+                            <option value="치매의심">인지기능 저하 의심 (정밀 필요)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-hepatitisB">B형 간염 보유 상태</label>
+                        <select id="profile-hepatitisB" class="form-input" style="height: 48px; background: rgba(0,0,0,0.15); color: var(--text-main); border: 1px solid var(--panel-border);">
+                            <option value="해당없음">미실시 / 해당없음</option>
+                            <option value="항체있음">면역 / 항체 있음 (안심)</option>
+                            <option value="항체없음">항체 없음 (접종 필요)</option>
+                            <option value="보유자의심">B형간염 보유자 의심</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-depression">우울증 자가 진정 단계</label>
+                        <select id="profile-depression" class="form-input" style="height: 48px; background: rgba(0,0,0,0.15); color: var(--text-main); border: 1px solid var(--panel-border);">
+                            <option value="정상">우울 소견 없음 (정상)</option>
+                            <option value="가벼운우울">가벼운 우울감</option>
+                            <option value="중간우울">중간 정도 우울감</option>
+                            <option value="심한우울">심한 우울감 (상담 권장)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="profile-osteoporosis">골밀도 검사 결과 (T-score 수치)</label>
+                        <input type="number" step="0.1" id="profile-osteoporosis" class="form-input" placeholder="예: -1.2 (골감소증 범위)">
+                    </div>
+
+                    <div class="form-group-full" style="margin-top: 15px;">
+                        <button type="submit" class="btn-save" style="height: 52px; font-size: 15px;">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>프로필 및 헬스 케어 건강 정보 저장</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             [SPA PANEL 2: 복용 히스토리]
+             ========================================================================== -->
+        <section id="panel-history" class="tab-panel">
+            <div class="card">
+                <div class="timeline" id="medication-timeline">
+                    <!-- JS에 의해 동적으로 목록이 삽입됩니다 -->
+                    <div class="empty-state">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <p>복용 이력이 비어있습니다. 신규 약물 등록 탭에서 분석 및 등록을 개시하세요.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             [SPA PANEL 3: 신규 약물 등록 - 이미지/처방전 업로드 & 분석]
+             ========================================================================== -->
+        <section id="panel-register" class="tab-panel">
+            <div class="card">
+                <form id="register-med-form" class="register-container">
+                    
+                    <!-- 1. 처방전 사진 드래그 업로드 영역 -->
+                    <div class="file-upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-icon">
+                            <i class="fa-solid fa-file-image"></i>
+                        </div>
+                        <h3 class="upload-title">처방전 또는 약봉투/약봉지 사진 업로드</h3>
+                        <p class="upload-sub">처방전이나 약봉지 사진을 클릭하거나 여기에 드롭 (JPEG, PNG 등)</p>
+                        <input type="file" id="file-input" class="file-input" accept="image/*">
+                    </div>
+
+                    <!-- 업로드 완료된 임시 파일 요약 상태 바 -->
+                    <div class="uploaded-file-info" id="file-info-bar">
+                        <div class="file-detail">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span id="uploaded-filename">test.jpg</span>
+                        </div>
+                        <button type="button" class="btn-remove-file" onclick="clearUploadedFile(event)">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- 구분 격자선 -->
+                    <div class="divider-or">또는 직접 입력</div>
+
+                    <!-- 💡 신규 추가: 처방 날짜 / 복용 시작일 및 복용 일수 입력 선택란 -->
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px;">
+                            <label class="form-label" for="med-prescription-date">처방 날짜 또는 복용 시작일</label>
+                            <input type="date" id="med-prescription-date" class="form-input" required>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 200px;">
+                            <label class="form-label" for="med-prescription-days">처방 복용 일수 (Days)</label>
+                            <input type="number" id="med-prescription-days" class="form-input" min="1" max="365" value="3" required placeholder="예: 3일 처방은 3 입력">
+                        </div>
+                    </div>
+
+                    <!-- 2. 직접 타이핑 입력 폼 (식약처 e약은요 실시간 자동완성 및 부분 일치 명시적 후보군 선택 패널 탑재) -->
+                    <div style="position: relative; display: flex; flex-direction: column; gap: 10px;">
+                        <label class="form-label" for="med-name-input">추가하려는 약물 명칭</label>
+                        <div style="position: relative; display: flex; gap: 10px;">
+                            <input type="text" id="med-name-input" class="form-input" style="flex: 1;" placeholder="약물 명칭을 입력해 주세요 (예: 타이레놀, 아스피린, 코대원)" autocomplete="off">
+                            <button type="button" id="btn-kfda-candidates-search" class="btn-save" style="background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); box-shadow: none; padding: 12px 22px;">
+                                <i class="fa-solid fa-magnifying-glass"></i> 식약처 검색
+                            </button>
+                        </div>
+                        <!-- 고속 검색 제안 드롭다운 박스 -->
+                        <div id="search-suggestions" class="search-suggestions-box"></div>
+
+                        <!-- 💡 신규 추가: 부분 일치 약물 리스트 후보군 명시적 시각화 카드 패널 -->
+                        <div id="kfda-candidates-panel" style="display: none; background: rgba(129, 140, 248, 0.03); border: 1px solid rgba(129, 140, 248, 0.15); border-radius: 16px; padding: 18px; margin-top: 5px; animation: slideUp 0.3s ease-out;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <span style="font-size: 13px; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> 식약처 검색 후보군 (클릭 시 자동 기입)
+                                </span>
+                                <span id="kfda-candidates-count" style="font-size: 11px; color: var(--text-muted); font-weight: 600;">0개 발견됨</span>
+                            </div>
+                            <!-- 동적 후보군 뱃지 나열 공간 -->
+                            <div id="kfda-candidates-badges" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <!-- 동적 뱃지 삽입 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 서브밋 실행 버튼 -->
+                    <div>
+                        <button type="submit" class="btn-save" style="width: 100%;">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>처방 비교 및 AI 부작용 심층 분석 시작</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             [SPA PANEL 4: AI 종합 위험도 리포트]
+             ========================================================================== -->
+        <section id="panel-report" class="tab-panel">
+            
+            <div id="empty-report-state" class="card empty-state">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <p>AI 약품 부작용 분석 결과가 없습니다. <br> 먼저 <strong>'신규 약물 등록'</strong> 탭에서 신약 분석 및 등록을 완료해주세요.</p>
+            </div>
+
+            <div id="full-report-container" style="display: none;">
+                <!-- 최신 등록 약물 기준 위험도 결과 그리드 -->
+                <div class="card report-grid" id="report-printable-area">
+                    
+                    <!-- 1. 신호등 안전 알림 장치 -->
+                    <div class="traffic-light-card">
+                        <div class="traffic-light-box">
+                            <div class="light-bulb red" id="light-red"></div>
+                            <div class="light-bulb yellow" id="light-yellow"></div>
+                            <div class="light-bulb green" id="light-green"></div>
+                        </div>
+                        <div class="traffic-status-label" id="report-risk-status">주의</div>
+                        <div class="traffic-status-desc" id="report-risk-desc">기저질환과 충돌 위험 감지</div>
+                    </div>
+
+                    <!-- 2. 네온 서큘러 아크 게이지 & 결과 요약 상세 -->
+                    <div class="gauge-section">
+                        <div class="gauge-score-row">
+                            <span class="gauge-score-title">AI 맞춤형 상호작용 위험도</span>
+                        </div>
+                        
+                        <!-- 신규 고도화 원형 Chart.js 게이지 -->
+                        <div class="chart-gauge-wrapper">
+                            <div class="chart-gauge-container">
+                                <canvas id="reportChart"></canvas>
+                                <div class="chart-score-overlay">
+                                    <span class="gauge-score-num" id="report-score-num">0</span>
+                                    <span class="chart-score-unit">위험 스코어</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3줄 종합 리포트 출력 요약 영역 -->
+                        <div class="report-3lines">
+                            <h3 class="report-3lines-title">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Gemini 3단계 핵심 복약 가이드라인</span>
+                            </h3>
+                            <ul class="report-list" id="report-3lines-list">
+                                <!-- 동적 데이터 삽입 -->
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PDF 다운로드 프리미엄 오퍼레이션 버튼 -->
+                <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button id="btn-pdf-download" class="btn-save" style="width: 100%; height: 50px; background: linear-gradient(135deg, #10b981, #059669); border:none; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>📄 의료기관 제출용 PDF 공식 안전 리포트 다운로드</span>
+                    </button>
+
+                    <!-- 💡 [신규 고도화: 리포트 탭 직접 삭제 스위치] -->
+                    <button id="btn-report-med-delete" onclick="handleReportMedDeleteClick()" style="width: 100%; height: 50px; background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>🗑️ 분석된 이 약제 기록 히스토리에서 안전하게 삭제하기</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             [SPA PANEL 5: 복약 알림 캘린더]
+             ========================================================================== -->
+        <section id="panel-calendar" class="tab-panel">
+            <div class="card">
+                <div class="calendar-wrapper">
+                    
+                    <!-- 달력 조작 헤더 정보 -->
+                    <div class="calendar-header">
+                        <button class="calendar-nav-btn" onclick="changeMonth(-1)"><i class="fa-solid fa-angle-left"></i></button>
+                        <div class="calendar-month-year" id="calendar-title">2026.08</div>
+                        <button class="calendar-nav-btn" onclick="changeMonth(1)"><i class="fa-solid fa-angle-right"></i></button>
+                    </div>
+
+                    <!-- 요일 라벨 표시 행 -->
+                    <div class="calendar-grid">
+                        <div class="day-label" style="color: var(--status-danger);">일</div>
+                        <div class="day-label">월</div>
+                        <div class="day-label">화</div>
+                        <div class="day-label">수</div>
+                        <div class="day-label">목</div>
+                        <div class="day-label">금</div>
+                        <div class="day-label" style="color: var(--color-primary);">토</div>
+                    </div>
+
+                    <!-- 달력 생성 날짜 그리드 행 -->
+                    <div class="calendar-grid" id="calendar-days-grid">
+                        <!-- 동적 날짜 렌더링 영역 -->
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==========================================
+         [AI 약학 비서 "Pillip (필립)" 인터랙티브 플로팅 위젯]
+         ========================================== -->
+    <div class="pillip-floating-widget">
+        <!-- 필립 전용 둥근 글라스모피즘 챗 패널 보드 -->
+        <div class="pillip-chat-board" id="pillip-chat-board">
+            <div class="pillip-chat-header">
+                <div class="pillip-chat-title-box">
+                    <div class="pillip-profile-img">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div class="pillip-chat-title-texts">
+                        <span class="pillip-main-name">AI 약사 Pillip (필립)</span>
+                        <span class="pillip-sub-name">
+                            <span class="online-dot"></span>
+                            <span>실시간 안심 진단 서비스</span>
+                        </span>
+                    </div>
+                </div>
+                <button class="pillip-chat-close-btn" id="pillip-close-btn">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            </div>
+            
+            <!-- 챗 영역 스크롤 바디 -->
+            <div class="pillip-chat-messages-area" id="pillip-messages-box">
+                <!-- 웰컴 첫 인사말 버블 -->
+                <div class="pillip-msg-row received">
+                    <div class="pillip-msg-bubble">
+                        안녕하세요! 💊 당신의 전임 스마트 AI 약학 동반자 **Pillip(필립)**이랍니다! ✨<br><br>
+                        제가 처방전 내에 있는 어려운 한글 약어들과 식약처 데이터를 기저질환과 비교해서 조곤조곤 조언해 드릴게요. <br><br>
+                        "복용 히스토리"에서 임의의 약품 카드를 누르시면 제가 자동으로 튀어나와 1:1 맞춤형 보충 지도를 수행해 드릴게요! 🩺 궁금한 약물 지식이 있다면 편하게 물어보세요!
+                    </div>
+                </div>
+            </div>
+
+            <!-- 챗 입력 영역 하단 바 -->
+            <div class="pillip-chat-input-area">
+                <input type="text" class="pillip-chat-input" id="pillip-user-input" placeholder="필립 비서에게 물어보고 싶은 약학 궁금증..." autocomplete="off">
+                <button class="pillip-chat-send-btn" id="pillip-send-btn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- 필립 동그란 실행 버블 토글 -->
+        <button class="pillip-bubble-trigger" id="pillip-trigger">
+            <i class="fa-solid fa-comment-medical"></i>
+        </button>
+    </div>
+
+
+    <!-- ==========================================
+         [스마트 복약 알림 설정 모달창 마크업]
+         ========================================== -->
+    <div id="alarm-schedule-modal-overlay" class="modal-overlay">
+        <div class="alarm-schedule-modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>스마트 복약 알람 등록</span>
+                </div>
+                <button class="btn-close-modal" onclick="closeAlarmModal()">&times;</button>
+            </div>
+            <form id="alarm-register-form" class="modal-body-form" onsubmit="handleAlarmRegisterSubmit(event)">
+                <input type="hidden" id="alarm-target-medication">
+                
+                <div>
+                    <label class="form-label">대상 의약품</label>
+                    <input type="text" id="alarm-target-display" class="form-input" readonly style="background: rgba(255,255,255,0.01); color: var(--color-primary); font-weight: 700;">
+                </div>
+                
+                <div>
+                    <label class="form-label" for="alarm-date">알람 날짜</label>
+                    <input type="date" id="alarm-date" class="form-input" required>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="alarm-time">복용 시간</label>
+                    <input type="time" id="alarm-time" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="btn-save" style="margin-top: 10px; width: 100%;">
+                    <i class="fa-solid fa-bell"></i>
+                    <span>지능형 알람 스케줄 추가</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         [대형 실시간 사이렌 알람 경고 오버레이 마크업]
+         ========================================== -->
+    <div id="alarm-alert-overlay" class="alarm-alert-overlay">
+        <div class="alarm-alert-icon-box">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <div class="alarm-alert-title">💊 약물 복용 예약 알람 💊</div>
+        
+        <div class="alarm-alert-medname" id="alarm-alert-med-display">타이레놀정500mg</div>
+        
+        <div class="alarm-alert-sub">
+            지정된 개인 맞춤형 복약 섭취 스케줄 시간입니다. <br>
+            건강한 약물 섭취를 위해 미지근한 물과 함께 정량을 제때 복용하세요!
+        </div>
+        
+        <div class="alarm-alert-btn-group">
+            <button class="btn-save" id="alarm-btn-complete" style="flex: 1; height: 55px; font-size: 15px;">
+                <i class="fa-solid fa-square-check"></i>
+                <span>💊 복용 완료하고 달력 기록</span>
+            </button>
+            <button class="btn-logout" id="alarm-btn-close" style="width: 120px; height: 55px; background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
+                <span>나중에 먹기</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         [AI 분석 로딩 상태 오버레이 (UX 추가 요구사항 1)]
+         ========================================== -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner-box">
+            <div class="spinner-ring"></div>
+            <i class="fa-solid fa-brain spinner-icon"></i>
+        </div>
+        <div class="loading-text">SafeDrug AI 정밀 약리학 분석 중...</div>
+        <div class="loading-subtext">Gemini 3.5 Flash가 처방전 이미지 및 건강 프로필 상호작용 위험도를 고속 연산하고 있습니다.</div>
+    </div>
+
+    <!-- ==========================================
+         [💡 신규 추가: 약물 복용 이력 2차 보안 확인 삭제 모달창 마크업]
+         ========================================== -->
+    <div id="delete-verify-modal-overlay" class="modal-overlay">
+        <div class="alarm-schedule-modal" style="border: 2px solid #ef4444; box-shadow: 0 0 40px rgba(239,68,68,0.25); border-radius: 20px; max-width: 480px; width: 90%;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(239,68,68,0.15); padding-bottom: 15px;">
+                <div class="modal-title" style="color: #ef4444; font-size: 18px; font-weight: 800;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>어르신 안심 약물 삭제 확인</span>
+                </div>
+                <button class="btn-close-modal" onclick="closeSafeDeleteVerifyModal()">&times;</button>
+            </div>
+            <form id="delete-verify-form" class="modal-body-form" onsubmit="handleSafeDeleteVerifySubmit(event)">
+                <input type="hidden" id="delete-med-id">
+                <input type="hidden" id="delete-med-fullname">
+                
+                <div style="background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15); padding: 15px; border-radius: 12px; font-size: 14px; color: #ef4444; line-height: 1.6; margin-bottom: 18px; font-weight: 600;">
+                    <i class="fa-solid fa-user-doctor"></i> <strong>실수 방지 안전 시스템 가이드:</strong><br>
+                    잘못된 터치 한 번으로 소중한 약력 정보가 지워지는 것을 방지하는 최종 확인 단계입니다. 아래 삭제할 의약품 명칭을 한 번 더 꼼꼼히 확인해 주세요.
+                </div>
+                
+                <div>
+                    <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 14.5px;">삭제될 의약품 이름</label>
+                    <div id="delete-med-target-display" 
+                         style="font-weight: 800; font-size: 17px; color: #ef4444; background: rgba(239,68,68,0.08); padding: 16px 20px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 18px; text-align: center; line-height: 1.4;">
+                        <span id="delete-med-target-text" style="word-break: break-all;">-</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 22px; margin-bottom: 10px; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+                    <p style="font-size: 14.5px; font-weight: 800; color: #f87171; margin: 0 0 15px 0; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i class="fa-solid fa-circle-question"></i> 정말로 이 약물 기록을 영구히 지우시겠습니까?
+                    </p>
+                    
+                    <!-- 👵👴 어르신용 초대형 직관적 O / X 안전 버튼 세트 -->
+                    <div style="display: flex; gap: 15px;">
+                        <button type="submit" class="btn-logout" style="flex: 1.3; background: #ef4444; border: none; color: #fff; height: 60px; font-size: 17px; font-weight: 800; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(239,68,68,0.25);">
+                            <span style="font-size: 24px; font-weight: 900; line-height: 1;">O</span> 
+                            <span>예, 지웁니다</span>
+                        </button>
+                        <button type="button" onclick="closeSafeDeleteVerifyModal()" style="flex: 1; background: #64748b; border: none; color: #fff; height: 60px; font-size: 16px; font-weight: 800; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                            <span style="font-size: 22px; font-weight: 900; line-height: 1;">X</span> 
+                            <span>아니오, 취소</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- [글로벌 토스트 컴포넌트 (UX 추가 요구사항 3)] -->
+    <div id="toast" class="toast-container">
+        <span id="toast-icon" class="toast-icon"><i class="fa-solid fa-info-circle"></i></span>
+        <span id="toast-message" class="toast-message">알림 메시지</span>
+    </div>
+
+
+    <!-- ==========================================
+         [Frontend JavaScript - SPA Dashboard Logic]
+         ========================================== -->
+    <script>
+        // 글로벌 상태 변수
+        let currentUser = null;
+        let selectedFile = null;
+        // Intelligent backend host detection to resolve fetch issues
+        const API_BASE = (location.protocol === "file:" || !location.port || location.port !== "3000") 
+            ? "http://localhost:3000" 
+            : "";
+            
+        // 달력 상태 관리 변수
+        let currentDate = new Date();
+        let calendarCheckedDates = new Set(); // 복약 완료일 ('YYYY-MM-DD' 스트링 세트)
+        
+        // 스마트 알람 관리 변수
+        let globalAlarms = []; // 사용자가 등록해 둔 알람 스케줄 목록 전체
+        let audioContextInstance = null; // 오디오 소리를 재생하기 위한 Web Audio API 인스턴스
+        let alarmAudioTimer = null; // 비프음을 주기적으로 울리기 위한 타이머 레퍼런스
+
+        // Chart.js 단일 인스턴스 관리를 위한 변수
+        let reportChartInstance = null;
+
+        // 페이지 기동 및 세션 무결성 검증
+        window.addEventListener("DOMContentLoaded", () => {
+            const rawUser = localStorage.getItem("currentUser");
+            if (!rawUser) {
+                location.href = "login.html";
+                return;
+            }
+
+            currentUser = JSON.parse(rawUser);
+            
+            // 모바일 로그아웃 뷰 가시성 조절
+            if(window.innerWidth <= 768) {
+                document.getElementById("mobile-logout-btn").style.display = "flex";
+            }
+
+            // UI 바인딩 및 프로필 초기화
+            updateUserHeader();
+            loadProfileData();
+
+            // 백그라운드 데이터 수신 초기 로딩 개시
+            fetchUserMedicationHistory();
+            fetchCalendarData();
+            fetchAlarmsData(); // 알람 스케줄 로드
+
+            // 브라우저 OS 알림 예약 권한 요청
+            requestBrowserNotificationPermission();
+
+            // 드래그 앤 드롭 파일 첨부 바인딩
+            setupDragAndDrop();
+
+            // 필립 비서 자바스크립트 리스너 연결
+            setupPillipListeners();
+
+            // 💡 부분 일치 식약처 후보군 수동 조작 바인딩
+            setupKfdaCandidateListeners();
+
+            // PDF 버튼 동적 연결
+            document.getElementById("btn-pdf-download").addEventListener("click", downloadPDFReport);
+
+            // 15초 주기 알람 타임체크 스케줄러 개시
+            setInterval(checkAlarmsScheduler, 15000);
+
+            // 초기 프로필 로드 바인딩
+            if (currentUser) {
+                document.getElementById("profile-age").value = currentUser.age || "";
+                document.getElementById("profile-illness").value = currentUser.illness || "";
+                document.getElementById("profile-allergies").value = currentUser.allergies || "";
+            }
+            
+            // Initialize prescription date input default value to today
+            const rxDateInput = document.getElementById("med-prescription-date");
+            if (rxDateInput) {
+                rxDateInput.value = new Date().toISOString().substring(0, 10);
+            }
+        });
+
+        // 1. 유저 헤더 동적 세팅
+        function updateUserHeader() {
+            document.getElementById("user-display-name").innerText = `${currentUser.name} 님`;
+            document.getElementById("user-display-email").innerText = `@${currentUser.username}`;
+            document.getElementById("user-avatar-initial").innerText = currentUser.name.trim().substring(0, 1);
+        }
+
+        // 2. 로그아웃 제어 핸들러
+        function handleLogout() {
+            localStorage.removeItem("currentUser");
+            showToast("안전하게 로그아웃되었습니다. 로그인 화면으로 환원합니다.", "info");
+            setTimeout(() => {
+                location.href = "login.html";
+            }, 1200);
+        }
+
+        // 3. SPA 탭 스위칭 라우터 로직
+        function switchTab(tabId) {
+            const menuItems = document.querySelectorAll(".menu-item");
+            menuItems.forEach(item => {
+                if (item.getAttribute("data-tab") === tabId) {
+                    item.classList.add("active");
+                } else {
+                    item.classList.remove("active");
+                }
+            });
+
+            const panels = document.querySelectorAll(".tab-panel");
+            panels.forEach(panel => {
+                if (panel.id === `panel-${tabId}`) {
+                    panel.classList.add("active");
+                } else {
+                    panel.classList.remove("active");
+                }
+            });
+
+            const mainTitle = document.getElementById("panel-main-title");
+            const subTitle = document.getElementById("panel-sub-title");
+
+            if (tabId === "mypage") {
+                mainTitle.innerText = "마이페이지";
+                subTitle.innerText = "안전한 약물 분석을 위해 개인 건강 프로필 정보를 최신 상태로 유지하세요.";
+            } else if (tabId === "history") {
+                mainTitle.innerText = "복용 히스토리";
+                subTitle.innerText = "과거부터 최근까지 분석 및 복용해 온 안전 약물 타임라인입니다.";
+                fetchUserMedicationHistory(); 
+            } else if (tabId === "register") {
+                mainTitle.innerText = "신규 약물 등록";
+                subTitle.innerText = "직접 이름을 기재하거나 처방전 이미지 비전 촬영을 통해 Gemini AI 고속 복약 연계를 수행하세요.";
+            } else if (tabId === "report") {
+                mainTitle.innerText = "AI 종합 위험도 리포트";
+                subTitle.innerText = "최근 등록된 신약의 상호작용 지수, 부작용 가능성 및 예방 가이드를 심층 보고합니다.";
+                updateReportTab(); 
+            } else if (tabId === "calendar") {
+                mainTitle.innerText = "복약 알림 달력";
+                subTitle.innerText = "복약 완료 및 약물 알람 일정이 한눈에 내려다보이는 지능형 복약 스케줄러 보드입니다.";
+                renderCalendar(); 
+            }
+        }
+
+        // 4. 프리미엄 토스트 출력 유틸
+        function showToast(message, type = "info") {
+            const toast = document.getElementById("toast");
+            const toastIcon = document.getElementById("toast-icon");
+            const toastMsg = document.getElementById("toast-message");
+
+            if (type === "success") {
+                toastIcon.className = "toast-icon success";
+                toastIcon.innerHTML = `<i class="fa-solid fa-circle-check"></i>`;
+            } else if (type === "error") {
+                toastIcon.className = "toast-icon error";
+                toastIcon.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+            } else {
+                toastIcon.className = "toast-icon info";
+                toastIcon.innerHTML = `<i class="fa-solid fa-info-circle"></i>`;
+            }
+
+            toastMsg.innerText = message;
+            toast.classList.add("show");
+
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        // ==========================================
+        // [백엔드 통신: 마이페이지 - 프로필 로드 / 저장]
+        // ==========================================
+        // ==========================================
+        // [백엔드 통신: 마이페이지 - 프로필 로드 / 저장 및 건강검진 AI 파싱]
+        // ==========================================
+        function loadProfileData() {
+            document.getElementById("profile-name").value = currentUser.name;
+            document.getElementById("profile-age").value = currentUser.age || "";
+            document.getElementById("profile-illness").value = currentUser.illness || "";
+            document.getElementById("profile-allergies").value = currentUser.allergies || "";
+            
+            // 💡 [신규 확장 건강검진 지표 폼 로드 바인딩]
+            document.getElementById("profile-height").value = currentUser.height || "";
+            document.getElementById("profile-weight").value = currentUser.weight || "";
+            document.getElementById("profile-bmi").value = currentUser.bmi || "";
+            document.getElementById("profile-waist").value = currentUser.waist || "";
+            document.getElementById("profile-systolic").value = currentUser.systolic || "";
+            document.getElementById("profile-diastolic").value = currentUser.diastolic || "";
+            document.getElementById("profile-fastingBloodSugar").value = currentUser.fastingBloodSugar || "";
+            document.getElementById("profile-hemoglobin").value = currentUser.hemoglobin || "";
+            document.getElementById("profile-urineProtein").value = currentUser.urineProtein || "정상";
+            document.getElementById("profile-creatinine").value = currentUser.creatinine || "";
+            document.getElementById("profile-egfr").value = currentUser.egfr || "";
+            document.getElementById("profile-ast").value = currentUser.ast || "";
+            document.getElementById("profile-alt").value = currentUser.alt || "";
+            document.getElementById("profile-gtp").value = currentUser.gtp || "";
+            document.getElementById("profile-totalCholesterol").value = currentUser.totalCholesterol || "";
+            document.getElementById("profile-hdl").value = currentUser.hdl || "";
+            document.getElementById("profile-triglyceride").value = currentUser.triglyceride || "";
+            document.getElementById("profile-ldl").value = currentUser.ldl || "";
+            document.getElementById("profile-dementia").value = currentUser.dementia || "해당없음";
+            document.getElementById("profile-hepatitisB").value = currentUser.hepatitisB || "해당없음";
+            document.getElementById("profile-depression").value = currentUser.depression || "정상";
+            document.getElementById("profile-osteoporosis").value = currentUser.osteoporosis || "";
+        }
+
+        // 🤖 [건강검진표 AI 이미지 선택 및 통합 분석 파이프라인]
+        let selectedCheckupFile = null;
+
+        function handleCheckupImageSelect(input) {
+            if (input.files && input.files[0]) {
+                selectedCheckupFile = input.files[0];
+                const fileNameSpan = document.getElementById("selected-image-name");
+                fileNameSpan.innerText = `📁 선택됨: ${selectedCheckupFile.name}`;
+                fileNameSpan.style.display = "block";
+                showToast(`📸 건강검진표 사진이 등록되었습니다: ${selectedCheckupFile.name}`, "info");
+            }
+        }
+
+        async function handleCheckupAiParseAll() {
+            const rawText = document.getElementById("checkup-raw-text").value.trim();
+            
+            // 이미지 파일과 텍스트 둘 다 없는 경우 가드
+            if (!selectedCheckupFile && !rawText) {
+                showToast("⚠️ 사진을 올리시거나 결과를 복사해서 붙여넣은 뒤 시작해 주세요.", "error");
+                return;
+            }
+
+            const btn = document.getElementById("btn-parse-checkup");
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Gemini AI 가 정밀 해독 중...</span>`;
+
+            try {
+                let response;
+                // 사진 파일이 등록되어 있는 경우 -> 비전 멀티모달 API 호출
+                if (selectedCheckupFile) {
+                    showToast("🔍 Gemini 비전 AI가 검진표 사진을 꼼꼼하게 읽어내는 중입니다...", "info");
+                    const formData = new FormData();
+                    formData.append("image", selectedCheckupFile);
+
+                    response = await fetch(`${API_BASE}/api/profile/parse-checkup-image`, {
+                        method: "POST",
+                        body: formData
+                    });
+                } 
+                // 텍스트만 있는 경우 -> 텍스트 파싱 API 호출
+                else {
+                    showToast("🔍 Gemini AI가 검진 결과 텍스트를 분석하는 중입니다...", "info");
+                    response = await fetch(`${API_BASE}/api/profile/parse-checkup`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ text: rawText })
+                    });
+                }
+
+                const resData = await response.json();
+                if (!response.ok) {
+                    const detailMsg = resData.detail ? ` (상세원인: ${resData.detail})` : "";
+                    throw new Error((resData.error || "검진표 분석 중 예기치 않은 오류가 발생했습니다.") + detailMsg);
+                }
+
+                const data = resData.data;
+                showToast("🩺 건강 지표 정밀 해독 완료! 각 항목에 자동 기입되었습니다.", "success");
+
+                // 수치 자동 대입 (Null 가드 포함)
+                if (data.height !== null) document.getElementById("profile-height").value = data.height;
+                if (data.weight !== null) document.getElementById("profile-weight").value = data.weight;
+                if (data.bmi !== null) document.getElementById("profile-bmi").value = data.bmi;
+                if (data.waist !== null) document.getElementById("profile-waist").value = data.waist;
+                if (data.systolic !== null) document.getElementById("profile-systolic").value = data.systolic;
+                if (data.diastolic !== null) document.getElementById("profile-diastolic").value = data.diastolic;
+                if (data.fastingBloodSugar !== null) document.getElementById("profile-fastingBloodSugar").value = data.fastingBloodSugar;
+                if (data.hemoglobin !== null) document.getElementById("profile-hemoglobin").value = data.hemoglobin;
+                if (data.urineProtein) document.getElementById("profile-urineProtein").value = data.urineProtein;
+                if (data.creatinine !== null) document.getElementById("profile-creatinine").value = data.creatinine;
+                if (data.egfr !== null) document.getElementById("profile-egfr").value = data.egfr;
+                if (data.ast !== null) document.getElementById("profile-ast").value = data.ast;
+                if (data.alt !== null) document.getElementById("profile-alt").value = data.alt;
+                if (data.gtp !== null) document.getElementById("profile-gtp").value = data.gtp;
+                if (data.totalCholesterol !== null) document.getElementById("profile-totalCholesterol").value = data.totalCholesterol;
+                if (data.hdl !== null) document.getElementById("profile-hdl").value = data.hdl;
+                if (data.triglyceride !== null) document.getElementById("profile-triglyceride").value = data.triglyceride;
+                if (data.ldl !== null) document.getElementById("profile-ldl").value = data.ldl;
+                if (data.dementia) document.getElementById("profile-dementia").value = data.dementia;
+                if (data.hepatitisB) document.getElementById("profile-hepatitisB").value = data.hepatitisB;
+                if (data.depression) document.getElementById("profile-depression").value = data.depression;
+                if (data.osteoporosis !== null) document.getElementById("profile-osteoporosis").value = data.osteoporosis;
+
+                // BMI 실시간 보정 계산
+                calculateBmiAutomatically();
+
+                // 선택된 파일 초기화
+                selectedCheckupFile = null;
+                document.getElementById("checkup-image-input").value = "";
+                document.getElementById("selected-image-name").style.display = "none";
+
+            } catch (err) {
+                console.error("통합 분석 처리 장애 디버깅 로그:", err);
+                showToast(err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        // 키와 몸무게가 변동될 때 BMI 자동 산정 장치
+        function calculateBmiAutomatically() {
+            const h = parseFloat(document.getElementById("profile-height").value);
+            const w = parseFloat(document.getElementById("profile-weight").value);
+            if (h > 0 && w > 0) {
+                const bmi = w / ((h / 100) * (h / 100));
+                document.getElementById("profile-bmi").value = bmi.toFixed(1);
+            }
+        }
+
+        // 실시간 키/몸무게 입력 감지 이벤트 부착
+        document.getElementById("profile-height")?.addEventListener("input", calculateBmiAutomatically);
+        document.getElementById("profile-weight")?.addEventListener("input", calculateBmiAutomatically);
+
+        document.getElementById("profile-form-element").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                age: document.getElementById("profile-age").value,
+                illness: document.getElementById("profile-illness").value.trim(),
+                allergies: document.getElementById("profile-allergies").value.trim(),
+                height: document.getElementById("profile-height").value,
+                weight: document.getElementById("profile-weight").value,
+                bmi: document.getElementById("profile-bmi").value,
+                waist: document.getElementById("profile-waist").value,
+                systolic: document.getElementById("profile-systolic").value,
+                diastolic: document.getElementById("profile-diastolic").value,
+                fastingBloodSugar: document.getElementById("profile-fastingBloodSugar").value,
+                hemoglobin: document.getElementById("profile-hemoglobin").value,
+                urineProtein: document.getElementById("profile-urineProtein").value,
+                creatinine: document.getElementById("profile-creatinine").value,
+                egfr: document.getElementById("profile-egfr").value,
+                ast: document.getElementById("profile-ast").value,
+                alt: document.getElementById("profile-alt").value,
+                gtp: document.getElementById("profile-gtp").value,
+                totalCholesterol: document.getElementById("profile-totalCholesterol").value,
+                hdl: document.getElementById("profile-hdl").value,
+                triglyceride: document.getElementById("profile-triglyceride").value,
+                ldl: document.getElementById("profile-ldl").value,
+                dementia: document.getElementById("profile-dementia").value,
+                hepatitisB: document.getElementById("profile-hepatitisB").value,
+                depression: document.getElementById("profile-depression").value,
+                osteoporosis: document.getElementById("profile-osteoporosis").value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/profile/${currentUser.id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "프로필 정보 저장 중 오류가 발생했습니다.");
+                }
+
+                showToast(data.message, "success");
+                
+                currentUser = data.user;
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+                updateUserHeader();
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        });
+
+
+        // ==========================================
+        // [백엔드 통신: 복용 히스토리 목록 수신 + ⏰알림추가 및 아코디언 식약처 바인딩]
+        // ==========================================
+        let globalMedications = []; 
+
+        async function fetchUserMedicationHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/api/medications/${currentUser.id}`);
+                if (!response.ok) throw new Error("히스토리 데이터를 가져오는 데 실패했습니다.");
+
+                const data = await response.json();
+                globalMedications = data;
+
+                const timelineContainer = document.getElementById("medication-timeline");
+                
+                if (data.length === 0) {
+                    timelineContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <p>복용 이력이 비어있습니다. 신규 약물 등록 탭에서 분석 및 등록을 개시하세요.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let timelineHTML = "";
+                data.forEach((med, i) => {
+                    const formattedDate = new Date(med.createdAt).toLocaleString("ko-KR", {
+                        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+                    });
+
+                    const escapedMedName = med.name.replace(/'/g, "\\'");
+
+                    // Real-time pharmacokinetic half-life decay simulation formulas
+                    const pDateStr = med.prescriptionDate || new Date(med.createdAt).toISOString().substring(0, 10);
+                    const prescriptionTime = new Date(pDateStr).getTime();
+                    const hrsPassed = Math.max(0, (Date.now() - prescriptionTime) / (1000 * 60 * 60));
+                    
+                    const halfLife = med.pharmacology?.halfLifeHours || 4.0;
+                    const excretionTime = med.pharmacology?.excretionTimeHours || 24;
+                    const simScore = med.pharmacology?.similarityScore || 0;
+                    const simReason = med.pharmacology?.similarityReason || "기존 복약 목록과의 이력이 완전하고 안전한 기전 상태입니다.";
+
+                    // 💡 [처방 일수 연동 자동 소거 스마트 시스템]
+                    const pDays = med.prescriptionDays || 3;
+                    const isPrescriptionExpired = hrsPassed >= (pDays * 24);
+
+                    let residualPercent = 100 * Math.pow(0.5, hrsPassed / halfLife);
+                    if (hrsPassed >= excretionTime || isPrescriptionExpired) {
+                        residualPercent = 0;
+                    }
+                    residualPercent = Math.max(0, Math.min(100, residualPercent));
+
+                    // Accordion info
+                    let kfdaDetailHTML = "";
+                    if (med.kfdaInfo) {
+                        const ki = med.kfdaInfo;
+                        kfdaDetailHTML = `
+                            <table class="kfda-table" style="margin-top:10px;">
+                                <tr>
+                                    <td class="kfda-th">효능 효과</td>
+                                    <td class="kfda-td">${ki.efcy || "정보 없음"}</td>
+                                </tr>
+                                <tr>
+                                    <td class="kfda-th">용법 용량</td>
+                                    <td class="kfda-td">${ki.useMethod || "정보 없음"}</td>
+                                </tr>
+                                <tr>
+                                    <td class="kfda-th">경고 및 주의</td>
+                                    <td class="kfda-td" style="color:#fcd34d;">${ki.warn || ki.atpn || "정보 없음"}</td>
+                                </tr>
+                                <tr>
+                                    <td class="kfda-th">부작용 이상반응</td>
+                                    <td class="kfda-td" style="color:#f87171;">${ki.se || "정보 없음"}</td>
+                                </tr>
+                                <tr>
+                                    <td class="kfda-th">상호작용 금기</td>
+                                    <td class="kfda-td" style="color:#818cf8;">${ki.intrc || "정보 없음"}</td>
+                                </tr>
+                            </table>
+                            <div class="accordion-btn-group">
+                                <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
+                                    <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 진단받기 💬
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        kfdaDetailHTML = `
+                            <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px;">
+                                <i class="fa-solid fa-circle-exclamation mr-1"></i> 식약처 공공 검색 사전에서 매칭되는 의약품 정보가 수집되지 않았습니다. <br>대신 Pillip 비서에게 물어보시면 상세 복약 조언을 Gemini가 직관적으로 제공해 드립니다.
+                                <div style="margin-top:10px;">
+                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
+                                        <i class="fa-solid fa-comment-medical"></i> Pillip 약사 AI 정밀 상담 개시 💬
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    timelineHTML += `
+                        <div class="timeline-item ${med.risk}">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-card">
+                                <div class="timeline-header">
+                                    <span class="timeline-med-name">${med.name}</span>
+                                    <div class="timeline-action-group" style="display:flex; align-items:center; gap:8px;">
+                                        <span class="timeline-badge ${med.risk}">${med.risk}</span>
+                                        <button class="btn-add-alarm-trigger" onclick="openAlarmModal('${escapedMedName}')" title="알람 예약">
+                                            <i class="fa-solid fa-bell"></i> ⏰ 알림
+                                        </button>
+                                        <button class="btn-history-delete" onclick="openSafeDeleteVerifyModal('${med.id}', '${escapedMedName}')" title="복용 기록 삭제" style="background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;">
+                                            <i class="fa-solid fa-trash-can"></i> 삭제
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                                    <span>처방 분석일: ${formattedDate}</span>
+                                    <div style="display:flex; gap:6px;">
+                                        <span style="background:rgba(129,140,248,0.12); color:#818cf8; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">처방 시작일: ${pDateStr}</span>
+                                        <span style="background:rgba(16,185,129,0.12); color:#10b981; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">복용 기간: ${pDays}일 ${isPrescriptionExpired ? "(복용완료/소거완료)" : ""}</span>
+                                    </div>
+                                </div>
+
+                                <!-- 💊 Realtime Pharmacokinetics Panel -->
+                                <div class="pharmacology-panel" style="background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); padding: 14px; border-radius: 12px; margin-top: 12px; font-size: 13px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <span style="font-weight: 700; color: var(--color-primary); display: flex; align-items: center; gap: 4px;">
+                                            <i class="fa-solid fa-droplet"></i> 체내 약물 성분 잔존율 시뮬레이션
+                                        </span>
+                                        <span style="font-weight: 800; color: var(--color-primary-light);">${residualPercent.toFixed(1)}%</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.02);">
+                                        <div style="width: ${residualPercent}%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light)); border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
+                                        <div>
+                                            <span style="font-weight: 600; color: var(--text-main);">약효 반감기:</span> ${halfLife}시간
+                                        </div>
+                                        <div>
+                                            <span style="font-weight: 600; color: var(--text-main);">완전 체외배출:</span> 약 ${excretionTime}시간
+                                        </div>
+                                    </div>
+                                    <div style="border-top: 1px dashed var(--panel-border); margin-top: 8px; padding-top: 8px; font-size: 11px; display: flex; flex-direction: column; gap: 2px;">
+                                        <div style="display: flex; justify-content: space-between;">
+                                            <span style="font-weight: 600; color: var(--text-main);">기존 복용 약물과의 약효 구조 유사도:</span>
+                                            <span style="font-weight: 800; color: ${simScore > 50 ? "#f87171" : "#34d399"};">${simScore}%</span>
+                                        </div>
+                                        <div style="color: var(--text-muted); line-height: 1.3;">${simReason}</div>
+                                    </div>
+                                </div>
+
+                                <p class="timeline-desc" style="margin-top: 12px; color: var(--text-main); font-weight: 500;">
+                                    <i class="fa-solid fa-triangle-exclamation text-indigo-400 mr-1"></i> ${med.reason}
+                                </p>
+                                <p class="timeline-desc" style="font-size: 12px; margin-top: 5px;">
+                                    ${med.summary ? med.summary[0] : "이상 징후 성분을 면밀하게 관찰 중입니다."}
+                                </p>
+
+                                <!-- 신규 아코디언 상세 정보 토글 -->
+                                <button class="accordion-trigger-btn" onclick="toggleAccordion(this, ${i})">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                    <span>식약처 상세 복약 의약정보 보기</span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:auto;"></i>
+                                </button>
+                                <div class="accordion-content" id="acc-content-${i}">
+                                    ${kfdaDetailHTML}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                timelineContainer.innerHTML = timelineHTML;
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        }
+
+        // 복약 정보 아코디언 핸들러
+        function toggleAccordion(btn, idx) {
+            const content = document.getElementById(`acc-content-${idx}`);
+            const isOpened = content.classList.contains("open");
+            
+            // 모든 다른 아코디언 닫기
+            const allContents = document.querySelectorAll(".accordion-content");
+            const allBtns = document.querySelectorAll(".accordion-trigger-btn");
+            
+            allContents.forEach((c, i) => {
+                if (i !== idx) {
+                    c.classList.remove("open");
+                    c.style.maxHeight = null;
+                }
+            });
+            allBtns.forEach((b, i) => {
+                if (i !== idx) {
+                    b.querySelector(".fa-chevron-down")?.style.setProperty("transform", "rotate(0deg)");
+                }
+            });
+
+            if (!isOpened) {
+                content.classList.add("open");
+                content.style.maxHeight = content.scrollHeight + 100 + "px"; // padding 마진 공간 보정
+                btn.querySelector(".fa-chevron-down")?.style.setProperty("transform", "rotate(180deg)");
+                showToast(`'${globalMedications[idx].name}' 식약처 상세 수집 사전이 활성화되었습니다.`, "success");
+            } else {
+                content.classList.remove("open");
+                content.style.maxHeight = null;
+                btn.querySelector(".fa-chevron-down")?.style.setProperty("transform", "rotate(0deg)");
+            }
+        }
+
+
+        // ==========================================
+        // [백엔드 통신: 신규 약물 등록 폼 & 처방전 비전 업로드]
+        // ==========================================
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById("drop-zone");
+            const fileInput = document.getElementById("file-input");
+
+            dropZone.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                dropZone.classList.add("active");
+            });
+
+            dropZone.addEventListener("dragleave", () => {
+                dropZone.classList.remove("active");
+            });
+
+            dropZone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                dropZone.classList.remove("active");
+
+                if (e.dataTransfer.files.length > 0) {
+                    handleFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener("change", () => {
+                if (fileInput.files.length > 0) {
+                    handleFileSelection(fileInput.files[0]);
+                }
+            });
+        }
+
+        function handleFileSelection(file) {
+            if (!file.type.startsWith("image/")) {
+                showToast("처방전 또는 약봉지 이미지 파일만 업로드할 수 있습니다.", "error");
+                return;
+            }
+
+            selectedFile = file;
+            document.getElementById("uploaded-filename").innerText = file.name;
+            document.getElementById("file-info-bar").classList.add("show");
+            showToast("처방전 사진이 안전하게 준비되었습니다.", "success");
+        }
+
+        function clearUploadedFile(event) {
+            if(event) event.stopPropagation();
+            selectedFile = null;
+            document.getElementById("file-input").value = "";
+            document.getElementById("file-info-bar").classList.remove("show");
+            showToast("첨부된 파일이 해제되었습니다.", "info");
+        }
+
+        document.getElementById("register-med-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const medName = document.getElementById("med-name-input").value.trim();
+            const prescriptionDate = document.getElementById("med-prescription-date").value;
+            const prescriptionDays = document.getElementById("med-prescription-days").value;
+
+            if (!medName && !selectedFile) {
+                showToast("약물 명칭을 입력하거나 처방전 이미지를 등록해 주세요.", "error");
+                return;
+            }
+
+            const loadingOverlay = document.getElementById("loading-overlay");
+            loadingOverlay.classList.add("active");
+
+            const formData = new FormData();
+            if (medName) formData.append("medicationName", medName);
+            if (selectedFile) formData.append("prescriptionImage", selectedFile);
+            if (prescriptionDate) formData.append("prescriptionDate", prescriptionDate);
+            if (prescriptionDays) formData.append("prescriptionDays", prescriptionDays);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/medications/register/${currentUser.id}`, {
+                    method: "POST",
+                    body: formData 
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Gemini AI 분석 수행 중 오류가 빚어졌습니다.");
+                }
+
+                showToast(data.message || "AI 약물 분석 및 등록 완료!", "success");
+
+                document.getElementById("register-med-form").reset();
+                document.getElementById("med-prescription-date").value = new Date().toISOString().substring(0, 10);
+                document.getElementById("med-prescription-days").value = 3; // 💡 기본 처방 일수 리셋
+                clearUploadedFile(null);
+                
+                // 💡 후보군 패널 초기화 닫기
+                const candidatesPanel = document.getElementById("kfda-candidates-panel");
+                if (candidatesPanel) candidatesPanel.style.display = "none";
+
+                await fetchUserMedicationHistory();
+
+                setTimeout(() => {
+                    loadingOverlay.classList.remove("active");
+                    switchTab("report");
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                loadingOverlay.classList.remove("active");
+                showToast(err.message, "error");
+            }
+        });
+
+
+        // ==========================================
+        // [식약처 실시간 자동완성 제안 연동 스크립트]
+        // ==========================================
+        let searchDebounceTimeout = null;
+        const medInput = document.getElementById("med-name-input");
+        const suggestionsBox = document.getElementById("search-suggestions");
+
+        medInput.addEventListener("input", (e) => {
+            const keyword = e.target.value.trim();
+            
+            clearTimeout(searchDebounceTimeout);
+
+            if (keyword.length < 2) {
+                suggestionsBox.classList.remove("show");
+                suggestionsBox.innerHTML = "";
+                return;
+            }
+
+            searchDebounceTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/api/medications/search?keyword=${encodeURIComponent(keyword)}`);
+                    if (!response.ok) throw new Error("검색 제안 데이터 가져오기 실패");
+                    
+                    const list = await response.json();
+                    
+                    if (list.length === 0) {
+                        suggestionsBox.classList.remove("show");
+                        suggestionsBox.innerHTML = "";
+                        return;
+                    }
+
+                    let html = "";
+                    list.forEach(name => {
+                        html += `
+                            <div class="suggestion-item" data-value="${name}">
+                                <i class="fa-solid fa-prescription-bottle-medical"></i>
+                                <span>${name}</span>
+                            </div>
+                        `;
+                    });
+
+                    suggestionsBox.innerHTML = html;
+                    suggestionsBox.classList.add("show");
+
+                    const items = suggestionsBox.querySelectorAll(".suggestion-item");
+                    items.forEach(item => {
+                        item.addEventListener("click", () => {
+                            const val = item.getAttribute("data-value");
+                            medInput.value = val;
+                            suggestionsBox.classList.remove("show");
+                            showToast(`의학 공식명칭 '${val}'이(가) 적용되었습니다.`, "success");
+                            
+                            // 💡 뱃지 후보군 패널도 한 번 더 갱신해 주어 자연스럽게 동기화
+                            fetchAndShowKfdaCandidates(val);
+                        });
+                    });
+
+                } catch (err) {
+                    console.error("자동완성 연동 중 예외:", err);
+                }
+            }, 300);
+        });
+
+        document.addEventListener("click", (e) => {
+            if (e.target !== medInput && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.classList.remove("show");
+            }
+        });
+
+
+        // ==========================================
+        // 💡 [신규 고도화: 부분 일치 약물 리스트 후보군 명시화 엔진]
+        // ==========================================
+        function setupKfdaCandidateListeners() {
+            const searchBtn = document.getElementById("btn-kfda-candidates-search");
+            
+            if (searchBtn) {
+                searchBtn.addEventListener("click", () => {
+                    const keyword = medInput.value.trim();
+                    if (!keyword || keyword.length < 2) {
+                        showToast("검색을 시작하려면 최소 2글자 이상 입력해 주세요.", "error");
+                        return;
+                    }
+                    fetchAndShowKfdaCandidates(keyword);
+                });
+            }
+            
+            // 키보드 엔터 칠 때도 검색 후보 패널을 트리거하도록 연결 (인풋 포커스 상태)
+            medInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault(); // 기본 폼 서브밋 차단하고 검색 후보군 도출
+                    const keyword = medInput.value.trim();
+                    if (keyword.length >= 2) {
+                        fetchAndShowKfdaCandidates(keyword);
+                    }
+                }
+            });
+        }
+
+        // 실제 식약처 검색 후보군 가져와 바인딩하는 제어 함수
+        async function fetchAndShowKfdaCandidates(keyword) {
+            const panel = document.getElementById("kfda-candidates-panel");
+            const badgeContainer = document.getElementById("kfda-candidates-badges");
+            const countLabel = document.getElementById("kfda-candidates-count");
+
+            if (!panel || !badgeContainer) return;
+
+            try {
+                // 부드러운 로딩 연출
+                badgeContainer.innerHTML = `<span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin mr-1"></i> 식약처 공공 데이터베이스 검색 중...</span>`;
+                panel.style.display = "block";
+
+                const response = await fetch(`${API_BASE}/api/medications/search?keyword=${encodeURIComponent(keyword)}`);
+                if (!response.ok) throw new Error("후보군 조회를 할 수 없습니다.");
+                
+                const list = await response.json();
+                
+                if (list.length === 0) {
+                    badgeContainer.innerHTML = `<span style="font-size:12px; color:var(--status-danger);"><i class="fa-solid fa-circle-xmark"></i> '${keyword}' 키워드와 일치하는 약물을 식약처 API에서 찾을 수 없습니다. <br>대신 직접 입력한 명칭으로 인공지능 예측 분석을 속행하실 수 있습니다.</span>`;
+                    countLabel.innerText = "0개 발견됨";
+                    return;
+                }
+
+                countLabel.innerText = `${list.length}개 발견됨`;
+                
+                let badgesHTML = "";
+                list.forEach(name => {
+                    badgesHTML += `
+                        <button type="button" class="candidate-badge" data-value="${name}">
+                            <i class="fa-solid fa-pills" style="color:var(--color-primary); font-size:11px;"></i>
+                            <span>${name}</span>
+                        </button>
+                    `;
+                });
+                
+                badgeContainer.innerHTML = badgesHTML;
+
+                // 클릭 이벤트 개별 바인딩
+                const badges = badgeContainer.querySelectorAll(".candidate-badge");
+                badges.forEach(badge => {
+                    badge.addEventListener("click", () => {
+                        const selectedVal = badge.getAttribute("data-value");
+                        medInput.value = selectedVal;
+                        
+                        // 하이라이팅 깜빡임 이펙트 효과 적용
+                        badge.style.background = "var(--color-primary)";
+                        badge.style.color = "#000";
+                        
+                        showToast(`선택하신 '${selectedVal}' 공식 약품명이 입력창에 등록되었습니다! 💊`, "success");
+                        
+                        // 가시성을 위해 서서히 닫아주기
+                        setTimeout(() => {
+                            panel.style.display = "none";
+                        }, 800);
+                    });
+                });
+
+            } catch (err) {
+                console.error("후보 매칭 엔진 장애:", err);
+                badgeContainer.innerHTML = `<span style="font-size:12px; color:var(--status-danger);">식약처 통신 장애 또는 API 미작동 상태입니다.</span>`;
+            }
+        }
+
+
+        // ==========================================
+        // [AI 종합 위험도 리포트 - 신호등 및 네온 Chart.js 원형 갱신]
+        // ==========================================
+        function updateReportTab() {
+            const emptyState = document.getElementById("empty-report-state");
+            const fullReport = document.getElementById("full-report-container");
+
+            if (globalMedications.length === 0) {
+                emptyState.style.display = "block";
+                fullReport.style.display = "none";
+                return;
+            }
+
+            emptyState.style.display = "none";
+            fullReport.style.display = "block";
+
+            const latestMed = globalMedications[0];
+
+            document.getElementById("light-red").classList.remove("active");
+            document.getElementById("light-yellow").classList.remove("active");
+            document.getElementById("light-green").classList.add("active"); // 리포팅 초기화용 그린 세팅
+
+            const riskLabel = document.getElementById("report-risk-status");
+            const riskDesc = document.getElementById("report-risk-desc");
+
+            riskLabel.innerText = latestMed.risk;
+            riskDesc.innerText = latestMed.reason;
+
+            let riskColor = "var(--status-safe)";
+            
+            // 신호등 기계 전구 일괄 점등 제어
+            document.getElementById("light-red").classList.remove("active");
+            document.getElementById("light-yellow").classList.remove("active");
+            document.getElementById("light-green").classList.remove("active");
+
+            if (latestMed.risk === "안전") {
+                document.getElementById("light-green").classList.add("active");
+                riskLabel.style.color = "var(--status-safe)";
+                riskColor = "var(--status-safe)";
+            } else if (latestMed.risk === "주의") {
+                document.getElementById("light-yellow").classList.add("active");
+                riskLabel.style.color = "var(--status-warn)";
+                riskColor = "var(--status-warn)";
+            } else {
+                document.getElementById("light-red").classList.add("active");
+                riskLabel.style.color = "var(--status-danger)";
+                riskColor = "var(--status-danger)";
+            }
+
+            document.getElementById("report-score-num").innerText = latestMed.score;
+
+            // Chart.js 원형 도넛 게이지 차트 생성/갱신 파이프라인
+            setTimeout(() => {
+                drawNeonDoughnutChart(latestMed.score, riskColor);
+            }, 100);
+
+            const guideContainer = document.getElementById("report-3lines-list");
+            let guideHTML = "";
+            const icons = [
+                "fa-solid fa-circle-info text-blue-400",
+                "fa-solid fa-triangle-exclamation text-amber-400",
+                "fa-solid fa-heart-pulse text-emerald-400"
+            ];
+
+            latestMed.summary.forEach((line, index) => {
+                guideHTML += `
+                    <li class="report-list-item">
+                        <i class="${icons[index] || 'fa-solid fa-check-circle'}"></i>
+                        <span>${line}</span>
+                    </li>
+                `;
+            });
+            guideContainer.innerHTML = guideHTML;
+        }
+
+        // 고성능 Chart.js 네온 원형 프로그레스 드로잉 함수 (Semi-Doughnut)
+        function drawNeonDoughnutChart(score, color) {
+            const ctx = document.getElementById("reportChart").getContext("2d");
+            
+            if (reportChartInstance) {
+                reportChartInstance.destroy();
+            }
+
+            // 낮 테마 여부 확인에 기반한 게이지 배경 연동
+            const isLightTheme = document.body.classList.contains("light-theme");
+            const emptyBgColor = isLightTheme ? "rgba(15, 23, 42, 0.08)" : "rgba(255, 255, 255, 0.03)";
+
+            reportChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [score, 100 - score],
+                        backgroundColor: [
+                            color,
+                            emptyBgColor
+                        ],
+                        borderWidth: 0,
+                        borderRadius: [10, 0],
+                        cutout: '80%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    circumference: 180, // 반원 형태 지정
+                    rotation: -90, // 수평 정렬 보정
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutBack'
+                    }
+                }
+            });
+        }
+
+
+        // ==========================================
+        // [백엔드 통신 & UI: 복약 알림 캘린더 생성 및 토글]
+        // ==========================================
+        async function fetchCalendarData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/calendar/${currentUser.id}`);
+                if (!response.ok) throw new Error("복약 일지를 가져오지 못했습니다.");
+                
+                const data = await response.json();
+                calendarCheckedDates.clear();
+                data.forEach(item => {
+                    calendarCheckedDates.add(item.date);
+                });
+
+                const calendarPanel = document.getElementById("panel-calendar");
+                if (calendarPanel.classList.contains("active")) {
+                    renderCalendar();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        // 달력 동적 렌더링 함수 (알람 스케줄 배지 연동 고도화)
+        function renderCalendar() {
+            const calendarTitle = document.getElementById("calendar-title");
+            const daysGrid = document.getElementById("calendar-days-grid");
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            calendarTitle.innerText = `${year}.${String(month + 1).padStart(2, '0')}`;
+
+            const firstDayIndex = new Date(year, month, 1).getDay();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+
+            daysGrid.innerHTML = "";
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement("div");
+                emptyCell.className = "calendar-day empty";
+                daysGrid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayCell = document.createElement("div");
+                dayCell.className = "calendar-day";
+
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const isChecked = calendarCheckedDates.has(dateString);
+                if (isChecked) {
+                    dayCell.classList.add("completed");
+                }
+
+                const currentWeekDay = new Date(year, month, day).getDay();
+                let numColorStyle = "";
+                if (currentWeekDay === 0) numColorStyle = "color: var(--status-danger);"; 
+                if (currentWeekDay === 6) numColorStyle = "color: var(--color-primary);"; 
+
+                const dayAlarms = globalAlarms.filter(alarm => alarm.dateTime.startsWith(dateString));
+                let alarmBadgesHTML = "";
+                if (dayAlarms.length > 0) {
+                    alarmBadgesHTML = `<div class="calendar-alarm-badges-list">`;
+                    dayAlarms.forEach(alarm => {
+                        const timePart = alarm.dateTime.split("T")[1] || "00:00";
+                        const escapedId = alarm.id;
+                        alarmBadgesHTML += `
+                            <div class="calendar-badge-item" title="${alarm.medicationName} (${timePart})">
+                                <span style="display:flex; align-items:center; gap:2px; overflow:hidden; text-overflow:ellipsis;">
+                                    <i class="fa-solid fa-clock" style="font-size:8px;"></i> ${timePart} ${alarm.medicationName}
+                                </span>
+                                <button class="calendar-badge-delete-btn" onclick="handleDeleteAlarmClick(event, '${escapedId}')" title="알람 예약 취소">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    alarmBadgesHTML += `</div>`;
+                }
+
+                dayCell.innerHTML = `
+                    <span class="day-num" style="${numColorStyle}">${day}</span>
+                    <span class="completed-mark"><i class="fa-solid fa-square-check"></i></span>
+                    ${alarmBadgesHTML}
+                `;
+
+                dayCell.onclick = (e) => {
+                    if (e.target.closest(".calendar-badge-item")) return;
+                    handleCalendarDayClick(dateString);
+                };
+
+                daysGrid.appendChild(dayCell);
+            }
+        }
+
+        async function handleCalendarDayClick(dateString) {
+            try {
+                const response = await fetch(`${API_BASE}/api/calendar/toggle/${currentUser.id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date: dateString })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error("복약 일지 수정에 실패했습니다.");
+
+                showToast(data.message, "success");
+
+                if (data.completed) {
+                    calendarCheckedDates.add(dateString);
+                } else {
+                    calendarCheckedDates.delete(dateString);
+                }
+
+                renderCalendar();
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        }
+
+
+        // ==========================================
+        // [⏰ 스마트 복약 알람 스케줄러 프론트엔드 엔진]
+        // ==========================================
+
+        function requestBrowserNotificationPermission() {
+            if ("Notification" in window) {
+                if (Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+
+        async function fetchAlarmsData() {
+            try {
+                const response = await fetch(`${API_BASE}/api/alarms/${currentUser.id}`);
+                if (!response.ok) throw new Error("알람 데이터를 수신할 수 없습니다.");
+                const data = await response.json();
+                globalAlarms = data;
+                
+                const calendarPanel = document.getElementById("panel-calendar");
+                if (calendarPanel.classList.contains("active")) {
+                    renderCalendar();
+                }
+            } catch (err) {
+                console.error("알람 데이터 로딩 에러:", err);
+            }
+        }
+
+        function openAlarmModal(medicationName) {
+            document.getElementById("alarm-target-medication").value = medicationName;
+            document.getElementById("alarm-target-display").value = medicationName;
+            
+            const todayStr = new Date().toISOString().split("T")[0];
+            document.getElementById("alarm-date").value = todayStr;
+
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            document.getElementById("alarm-time").value = timeStr;
+
+            document.getElementById("alarm-schedule-modal-overlay").classList.add("active");
+        }
+
+        function closeAlarmModal() {
+            document.getElementById("alarm-schedule-modal-overlay").classList.remove("active");
+            document.getElementById("alarm-register-form").reset();
+        }
+
+        async function handleAlarmRegisterSubmit(e) {
+            e.preventDefault();
+
+            const medicationName = document.getElementById("alarm-target-medication").value;
+            const date = document.getElementById("alarm-date").value;
+            const time = document.getElementById("alarm-time").value;
+
+            if (!date || !time) {
+                showToast("날짜와 시간 정보를 모두 정확히 입력해 주세요.", "error");
+                return;
+            }
+
+            const dateTime = `${date}T${time}`; 
+
+            try {
+                const response = await fetch(`${API_BASE}/api/alarms/register/${currentUser.id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ medicationName, dateTime })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "알람 일정 추가에 실패했습니다.");
+
+                showToast(data.message, "success");
+                closeAlarmModal();
+                
+                await fetchAlarmsData();
+
+            } catch (err) {
+                console.error("알람 등록 중 에러:", err);
+                showToast(err.message, "error");
+            }
+        }
+
+        async function handleDeleteAlarmClick(event, alarmId) {
+            event.stopPropagation(); 
+            
+            if (!confirm("해당 복약 알람 일정을 예약 취소하시겠습니까?")) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/alarms/delete/${currentUser.id}/${alarmId}`, {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || "알람 예약 취소 오류");
+
+                showToast(data.message, "success");
+                await fetchAlarmsData(); 
+
+            } catch (err) {
+                console.error("알람 삭제 실패:", err);
+                showToast(err.message, "error");
+            }
+        }
+
+        // ==========================================
+        // [🔊 실시간 백그라운드 타이머 매칭 분석기 및 경보 엔진]
+        // ==========================================
+        async function checkAlarmsScheduler() {
+            if (globalAlarms.length === 0) return;
+
+            const now = new Date();
+            const currentYearStr = now.getFullYear();
+            const currentMonthStr = String(now.getMonth() + 1).padStart(2, '0');
+            const currentDayStr = String(now.getDate()).padStart(2, '0');
+            const currentHourStr = String(now.getHours()).padStart(2, '0');
+            const currentMinStr = String(now.getMinutes()).padStart(2, '0');
+
+            const currentFormattedDateTime = `${currentYearStr}-${currentMonthStr}-${currentDayStr}T${currentHourStr}:${currentMinStr}`;
+
+            const matchedAlarm = globalAlarms.find(alarm => alarm.dateTime === currentFormattedDateTime && !alarm.triggered);
+
+            if (matchedAlarm) {
+                matchedAlarm.triggered = true; 
+                
+                triggerOSNotification(matchedAlarm.medicationName);
+                
+                triggerVisualAndSoundAlarm(matchedAlarm.medicationName, matchedAlarm.id, currentFormattedDateTime.split("T")[0]);
+            }
+        }
+
+        function triggerOSNotification(medicationName) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("💊 SafeDrug AI 복약 약알람", {
+                    body: `약 먹을 시간입니다! 어서 '${medicationName}'을(를) 물과 함께 복용하세요.`,
+                    icon: "/static/favicon.ico" 
+                });
+            }
+        }
+
+        function triggerVisualAndSoundAlarm(medicationName, alarmId, dateString) {
+            const overlay = document.getElementById("alarm-alert-overlay");
+            document.getElementById("alarm-alert-med-display").innerText = medicationName;
+            
+            overlay.classList.add("active");
+
+            startAlarmSirenMelody();
+
+            document.getElementById("alarm-btn-complete").onclick = async () => {
+                stopAlarmSirenMelody();
+                overlay.classList.remove("active");
+
+                if (!calendarCheckedDates.has(dateString)) {
+                    await handleCalendarDayClick(dateString);
+                }
+
+                try {
+                    await fetch(`/api/alarms/delete/${currentUser.id}/${alarmId}`, { method: "POST" });
+                    await fetchAlarmsData();
+                } catch (err) {
+                    console.error("복용 완료 후 알람 일정 정리 실패:", err);
+                }
+            };
+
+            document.getElementById("alarm-btn-close").onclick = () => {
+                stopAlarmSirenMelody();
+                overlay.classList.remove("active");
+                showToast("알람을 일시 해제했습니다. 제때 꼭 복용해 주세요!", "info");
+            };
+        }
+
+        function startAlarmSirenMelody() {
+            if (!audioContextInstance) {
+                audioContextInstance = new (window.AudioContext || window.webkitAudioContext)();
+            }
+
+            if (audioContextInstance.state === "suspended") {
+                audioContextInstance.resume();
+            }
+
+            alarmAudioTimer = setInterval(() => {
+                try {
+                    const osc = audioContextInstance.createOscillator();
+                    const gainNode = audioContextInstance.createGain();
+
+                    osc.connect(gainNode);
+                    gainNode.connect(audioContextInstance.destination);
+
+                    osc.type = "sine"; 
+                    osc.frequency.setValueAtTime(880, audioContextInstance.currentTime); 
+                    
+                    gainNode.gain.setValueAtTime(0.15, audioContextInstance.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContextInstance.currentTime + 0.4); 
+
+                    osc.start();
+                    osc.stop(audioContextInstance.currentTime + 0.4);
+                } catch (audioErr) {
+                    console.error("오디오 알람 신호음 생성 에러:", audioErr);
+                }
+            }, 800);
+        }
+
+        function stopAlarmSirenMelody() {
+            if (alarmAudioTimer) {
+                clearInterval(alarmAudioTimer);
+                alarmAudioTimer = null;
+            }
+        }
+
+
+        // ==========================================
+        // [신규 고도화 자바스크립트: 1. AI 약사 비서 'Pillip(필립)' 리스너 & 통신 파이프라인]
+        // ==========================================
+        function setupPillipListeners() {
+            const trigger = document.getElementById("pillip-trigger");
+            const board = document.getElementById("pillip-chat-board");
+            const closeBtn = document.getElementById("pillip-close-btn");
+            const sendBtn = document.getElementById("pillip-send-btn");
+            const userInput = document.getElementById("pillip-user-input");
+
+            trigger.addEventListener("click", () => {
+                board.classList.toggle("active");
+                if (board.classList.contains("active")) {
+                    userInput.focus();
+                }
+            });
+
+            closeBtn.addEventListener("click", () => {
+                board.classList.remove("active");
+            });
+
+            sendBtn.addEventListener("click", sendChatMessageToPillip);
+            userInput.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                    sendChatMessageToPillip();
+                }
+            });
+        }
+
+        // 대시보드 밖의 개별 아이콘에서 아코디언 "Pillip 약사 AI 진단받기" 트리거 시 연계 로직
+        function triggerPillipConsultation(medIdx) {
+            const med = globalMedications[medIdx];
+            const board = document.getElementById("pillip-chat-board");
+            board.classList.add("active");
+
+            // 로딩 메시지 출력 및 API 전송
+            appendPillipMessage(`💊 안전 약학 이력에서 **'${med.name}'**을(를) 선택하셨군요! 이 약품과 제 프로필 간의 특이 분석 사항을 정밀 검토해 드릴게요. 잠시만요...`, "received");
+            
+            sendAutomatedContextToPillip(med);
+        }
+
+        // 메시지 렌더링 서브 헬퍼
+        function appendPillipMessage(text, sender) {
+            const box = document.getElementById("pillip-messages-box");
+            const row = document.createElement("div");
+            row.className = `pillip-msg-row ${sender}`;
+
+            // 줄바꿈 보정 및 마크다운 단순 처리
+            let formattedText = text.replace(/\n/g, "<br>");
+            // **굵은 글씨** 마크다운 대응
+            formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+            row.innerHTML = `<div class="pillip-msg-bubble">${formattedText}</div>`;
+            box.appendChild(row);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 타이핑 모션 이펙트 뷰 출력
+        function showPillipTypingEffect() {
+            const box = document.getElementById("pillip-messages-box");
+            const row = document.createElement("div");
+            row.className = "pillip-msg-row received";
+            row.id = "pillip-typing-indicator";
+            row.innerHTML = `
+                <div class="pillip-msg-bubble" style="padding:10px 15px;">
+                    <div class="pillip-typing-dot-box">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            box.appendChild(row);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // 타이핑 표시 소거
+        function removePillipTypingEffect() {
+            const indicator = document.getElementById("pillip-typing-indicator");
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // 수동 자유 질문 핸들러
+        async function sendChatMessageToPillip() {
+            const userInput = document.getElementById("pillip-user-input");
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendPillipMessage(text, "sent");
+            userInput.value = "";
+            showPillipTypingEffect();
+
+            try {
+                // 현재 등록되어 있는 가장 최신의 약물 분석을 기본 컨텍스트 정보로 탑재
+                const context = globalMedications.length > 0 ? globalMedications[0] : null;
+
+                const response = await fetch(`${API_BASE}/api/pillip/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text, medicationContext: context })
+                });
+
+                const data = await response.json();
+                removePillipTypingEffect();
+                appendPillipMessage(data.reply, "received");
+
+            } catch (err) {
+                console.error(err);
+                removePillipTypingEffect();
+                appendPillipMessage("💊 아이코, 필립 비서와의 안심 통신 회선에 노이즈가 발생했어요. 정량 약물을 드시고 한 번만 더 시도해 주실래요?", "received");
+            }
+        }
+
+        // 약품 아코디언에서 호출 시 기동되는 전용 분석 API 송수신
+        async function sendAutomatedContextToPillip(medRecord) {
+            showPillipTypingEffect();
+
+            try {
+                const message = `제가 복용 히스토리에서 '${medRecord.name}' 약품 카드를 선택했습니다. 기저질환(${currentUser.illness}) 및 알레르기(${currentUser.allergies}) 대비, 이 약물의 안전도 분석 사유를 설명해 주시고, 어떻게 복용해야 할지 친근하게 처방 가이드라인을 알려주세요.`;
+                
+                const response = await fetch(`${API_BASE}/api/pillip/chat`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message, medicationContext: medRecord })
+                });
+
+                const data = await response.json();
+                removePillipTypingEffect();
+                appendPillipMessage(data.reply, "received");
+
+            } catch (err) {
+                console.error(err);
+                removePillipTypingEffect();
+                appendPillipMessage(`💊 '${medRecord.name}'에 대한 AI 예측 진단에 성공하지 못했습니다. 하지만 항상 정해진 규칙대로 안전하게 복용하시는 것을 추천드려요!`, "received");
+            }
+        }
+
+
+        // ==========================================
+        // [신규 고도화 자바스크립트: 2. html2pdf.js 기반 프리미엄 PDF 안전 리포트 발행]
+        // ==========================================
+        function downloadPDFReport() {
+            if (globalMedications.length === 0) {
+                showToast("출력할 약학 분석 데이터가 없습니다.", "error");
+                return;
+            }
+
+            const latestMed = globalMedications[0];
+            showToast("📄 PDF 종합 안전 리포트를 디자인하고 인쇄 품질로 가공하는 중...", "info");
+
+            // 임시 가상 프린트 전용 A4 컨테이너 생성 및 CSS 이식
+            const printElement = document.createElement("div");
+            printElement.style.padding = "40px";
+            printElement.style.background = "#ffffff";
+            printElement.style.color = "#334155";
+            printElement.style.fontFamily = "'Noto Sans KR', sans-serif";
+            printElement.style.borderRadius = "0px";
+
+            // 의료기관 스타일의 프리미엄 헤더 구성
+            printElement.innerHTML = `
+                <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 20px; margin-bottom: 30px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <h1 style="font-size:26px; color:#1e1b4b; margin:0; font-weight:900;">SafeDrug AI 약물안전 보고서</h1>
+                        <p style="font-size:12px; color:#64748b; margin:5px 0 0 0;">정밀 인공지능 기반 환자 맞춤형 복약 및 약물 상호작용 부작용 분석 리포트</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:11px; background:#e0e7ff; color:#4f46e5; padding:4px 10px; border-radius:10px; font-weight:700;">의료기관 및 약국 제출용</span>
+                    </div>
+                </div>
+
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:15px; margin-bottom: 30px; background:#f8fafc; padding:20px; border-radius:12px;">
+                    <div>
+                        <p style="font-size:13px; margin:0 0 6px 0;"><strong>수신 환자 성명:</strong> ${currentUser.name}</p>
+                        <p style="font-size:13px; margin:0;"><strong>만 연령 정보:</strong> ${currentUser.age || "미기재"}세</p>
+                    </div>
+                    <div>
+                        <p style="font-size:13px; margin:0 0 6px 0;"><strong>알레르기 보유 요인:</strong> ${currentUser.allergies || "없음"}</p>
+                        <p style="font-size:13px; margin:0;"><strong>보유 기저질환:</strong> ${currentUser.illness || "없음"}</p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 35px;">
+                    <h3 style="font-size:16px; color:#1e1b4b; border-left:4px solid #4f46e5; padding-left:10px; margin-bottom:15px;">[1] 분석 대상 의약품 및 종합 소견</h3>
+                    <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#ffffff;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <span style="font-size:18px; font-weight:800; color:#0f172a;">${latestMed.name}</span>
+                            <span style="font-size:13px; font-weight:800; color:${latestMed.risk === '위험' ? '#ef4444' : latestMed.risk === '주의' ? '#f59e0b' : '#10b981'}; background:#f1f5f9; padding:5px 15px; border-radius:20px;">
+                                등급: ${latestMed.risk} (위험점수: ${latestMed.score}점)
+                            </span>
+                        </div>
+                        <p style="font-size:14px; color:#475569; line-height:1.6; margin:0;">
+                             <strong>안전 위험 원인 요약:</strong> <br>${latestMed.reason}
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 35px;">
+                    <h3 style="font-size:16px; color:#1e1b4b; border-left:4px solid #4f46e5; padding-left:10px; margin-bottom:15px;">[2] 지능형 안전 복용 행동 수칙</h3>
+                    <ul style="padding-left:20px; font-size:13.5px; color:#334155; line-height:2.0; margin:0;">
+                        <li style="margin-bottom:10px;">${latestMed.summary[0]}</li>
+                        <li style="margin-bottom:10px;">${latestMed.summary[1]}</li>
+                        <li style="margin-bottom:10px;">${latestMed.summary[2]}</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 50px; text-align:center; border-top:1px solid #f1f5f9; padding-top:20px;">
+                    <p style="font-size:12px; color:#94a3b8; margin:0 0 10px 0;">본 보고서는 공공 식품의약품안전처 e약은요 오픈 데이터와 Google Gemini AI 의학 RAG 추론 엔진을 대조 분석하여 출력된 자료입니다.</p>
+                    <p style="font-size:13px; color:#475569; font-weight:700; margin:0;">SafeDrug AI 헬스케어 시스템 발급</p>
+                </div>
+            `;
+
+            // html2pdf 인스턴스 옵션 세팅 및 발행
+            const opt = {
+                margin:       10,
+                filename:     `SafeDrug_AI_안전보고서_${currentUser.name}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // html2pdf 라이브러리를 이용하여 다운로드 트리거
+            html2pdf().from(printElement).set(opt).save().then(() => {
+                showToast("📄 PDF 종합 안전 리포트 파일이 정상적으로 다운로드되었습니다!", "success");
+            }).catch(err => {
+                console.error(err);
+                showToast("PDF 변환 과정 중 오류가 발생했습니다.", "error");
+            });
+        }
+
+        // ==========================================
+        // [💡 신규 추가: 약물 복용 이력 안전 이중 검증 삭제 모달 비즈니스 로직]
+        // ==========================================
+        function openSafeDeleteVerifyModal(medId, medName) {
+            document.getElementById("delete-med-id").value = medId;
+            document.getElementById("delete-med-fullname").value = medName;
+            
+            // 시각화 타겟 텍스트 바인딩 (자식 스팬인 delete-med-target-text 에 매핑)
+            const targetTextSpan = document.getElementById("delete-med-target-text");
+            if (targetTextSpan) {
+                targetTextSpan.innerText = medName;
+            } else {
+                document.getElementById("delete-med-target-display").innerText = medName;
+            }
+            
+            // 모달 열기
+            document.getElementById("delete-verify-modal-overlay").classList.add("active");
+        }
+
+        function closeSafeDeleteVerifyModal() {
+            document.getElementById("delete-verify-modal-overlay").classList.remove("active");
+        }
+
+        async function handleSafeDeleteVerifySubmit(e) {
+            e.preventDefault();
+            
+            const medId = document.getElementById("delete-med-id").value;
+            
+            // 👵👴 [초안전 검증]: 세션 누락 또는 변수 유실 체크
+            if (!currentUser || !currentUser.id) {
+                console.error("오류: 현재 로그인된 사용자 세션 정보가 유실되었습니다.");
+                showToast("⚠️ 사용자 로그인 세션 정보가 올바르지 않습니다. 로그아웃 후 다시 시도해 주세요.", "error");
+                return;
+            }
+            
+            if (!medId) {
+                console.error("오류: 삭제할 약물의 식별 코드(medId)가 누락되었습니다.");
+                showToast("⚠️ 삭제 대상 약물 정보가 유실되었습니다.", "error");
+                return;
+            }
+            
+            const requestUrl = `${API_BASE}/api/medications/delete/${currentUser.id}/${medId}`;
+            console.log("🛠️ SafeDrug AI 안전 삭제 요청 시동 URL:", requestUrl);
+            
+            showToast("🔒 약학 이력 영구 안전 소거 중...", "info");
+            
+            try {
+                const response = await fetch(requestUrl, {
+                    method: "POST"
+                });
+                
+                // 💡 [초안전 디버깅 장치]: 리턴이 JSON이 아니라 엉뚱한 HTML일 경우에 파싱 오류가 발생하는 것을 차단
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    const textError = await response.text();
+                    console.error("⚠️ 서버가 JSON이 아닌 텍스트/HTML 형식을 반환했습니다. 본문:", textError);
+                    throw new Error(`⚠️ 서버 응답이 올바르지 않습니다. (접속 포트 혹은 주소가 정확한지 확인이 필요합니다.)`);
+                }
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || "삭제 처리 중 백엔드 API 서버 오류가 발생했습니다.");
+                }
+                
+                showToast("🗑️ 약물 복용 이력이 완벽하고 무해하게 소거되었습니다.", "success");
+                closeSafeDeleteVerifyModal();
+                
+                // 히스토리 다시 동기화
+                await fetchUserMedicationHistory();
+                
+            } catch (err) {
+                console.error("소거 실패 디버깅 로그:", err);
+                showToast(err.message, "error");
+            }
+        }
+
+        // ==========================================
+        // [💡 신규 추가: 테마 변경 / 글자 크기 조정 / 리포트 탭 삭제 제어기]
+        // ==========================================
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById("theme-icon");
+            const text = document.getElementById("theme-text");
+            
+            if (body.classList.contains("light-theme")) {
+                body.classList.remove("light-theme");
+                localStorage.setItem("theme", "dark");
+                if (icon) icon.className = "fa-solid fa-sun";
+                if (text) text.innerText = "낮 테마";
+                showToast("🌙 밤 테마 (다크 모드)가 활성화되었습니다.", "info");
+            } else {
+                body.classList.add("light-theme");
+                localStorage.setItem("theme", "light");
+                if (icon) icon.className = "fa-solid fa-moon";
+                if (text) text.innerText = "밤 테마";
+                showToast("☀️ 낮 테마 (라이트 모드)가 활성화되었습니다.", "success");
+            }
+
+            // 실시간 차트 게이지 배경 동적 동기화
+            const reportPanel = document.getElementById("panel-report");
+            if (reportPanel && reportPanel.classList.contains("active")) {
+                updateReportTab();
+            }
+        }
+
+        function changeFontScale(level) {
+            const body = document.body;
+            
+            // 클래스 일괄 정리
+            body.classList.remove("font-scale-medium", "font-scale-large");
+            
+            // 버튼 상태 하이라이트 일괄 정리용 헬퍼
+            const btnStandard = document.getElementById("btn-scale-standard");
+            const btnMedium = document.getElementById("btn-scale-medium");
+            const btnLarge = document.getElementById("btn-scale-large");
+            
+            if (btnStandard) { btnStandard.style.background = "transparent"; btnStandard.style.color = "var(--text-muted)"; }
+            if (btnMedium) { btnMedium.style.background = "transparent"; btnMedium.style.color = "var(--text-muted)"; }
+            if (btnLarge) { btnLarge.style.background = "transparent"; btnLarge.style.color = "var(--text-muted)"; }
+            
+            if (level === "medium") {
+                body.classList.add("font-scale-medium");
+                if (btnMedium) { btnMedium.style.background = "var(--color-primary)"; btnMedium.style.color = "#fff"; }
+                localStorage.setItem("fontScale", "medium");
+                showToast("🔎 글자 크기가 '크게' 확장되었습니다.", "info");
+            } else if (level === "large") {
+                body.classList.add("font-scale-large");
+                if (btnLarge) { btnLarge.style.background = "var(--color-primary)"; btnLarge.style.color = "#fff"; }
+                localStorage.setItem("fontScale", "large");
+                showToast("🔎 글자 크기가 '아주 크게' (어르신 안심 배율) 확장되었습니다! 👵👴", "success");
+            } else {
+                // standard
+                if (btnStandard) { btnStandard.style.background = "var(--color-primary)"; btnStandard.style.color = "#fff"; }
+                localStorage.setItem("fontScale", "standard");
+                showToast("🔎 글자 크기가 기본 배율로 복원되었습니다.", "info");
+            }
+        }
+
+        function handleReportMedDeleteClick() {
+            if (globalMedications.length === 0) {
+                showToast("⚠️ 삭제할 약학 리포트 데이터가 존재하지 않습니다.", "error");
+                return;
+            }
+            const latestMed = globalMedications[0];
+            openDeleteVerifyModal(latestMed.id, latestMed.name);
+        }
+
+        // 즉시 가동형 설정 복원 엔진
+        (function restoreUserPreferences() {
+            // 1. 테마 복원
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light-theme");
+                setTimeout(() => {
+                    const icon = document.getElementById("theme-icon");
+                    const text = document.getElementById("theme-text");
+                    if (icon) icon.className = "fa-solid fa-moon";
+                    if (text) text.innerText = "밤 테마";
+                }, 100);
+            }
+            
+            // 2. 글자 배율 복원
+            const savedScale = localStorage.getItem("fontScale") || "standard";
+            setTimeout(() => {
+                changeFontScale(savedScale);
+            }, 150);
+        })();
+    </script>
+</body>
+</html>
