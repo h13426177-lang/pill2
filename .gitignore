@@ -1,0 +1,23 @@
+# SafeDrug - GitHub Push Exclusion Guard (.gitignore)
+
+# Dependencies (의존성 패키지 생략)
+node_modules/
+jspm_packages/
+.pnp/
+.pnp.js
+
+# Environment Variables (🔒 구글 Gemini API 키 등 보안 기밀 제외)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Databases & local user files (사용자 로컬 업로드 이미지 및 DB 캐시 제외)
+uploads/
+*.log
+npm-debug.log*
+
+# OS Files (운영체제 시스템 임시파일)
+.DS_Store
+Thumbs.db
