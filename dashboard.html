@@ -2642,22 +2642,38 @@
                 
                 <div>
                     <label class="form-label">대상 의약품</label>
-                    <input type="text" id="alarm-target-display" class="form-input" readonly style="background: rgba(255,255,255,0.01); color: var(--color-primary); font-weight: 700;">
+                    <input type="text" id="alarm-target-display" class="form-input" readonly style="background: rgba(255,255,255,0.01); color: var(--color-primary); font-weight: 700; font-size: 15px;">
                 </div>
                 
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label class="form-label" for="alarm-start-date">복용 시작일</label>
+                        <input type="date" id="alarm-start-date" class="form-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label" for="alarm-days-count">복용 기간 (일수)</label>
+                        <input type="number" id="alarm-days-count" class="form-input" min="1" max="365" placeholder="예: 7" required>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="form-label" for="alarm-date">알람 날짜</label>
-                    <input type="date" id="alarm-date" class="form-input" required>
+                    <label class="form-label" for="alarm-frequency-select">하루 복용 횟수</label>
+                    <select id="alarm-frequency-select" class="form-input" onchange="generateDynamicTimeInputs(this.value)" style="height: 48px; background: rgba(0,0,0,0.15); color: var(--text-main); border: 1px solid var(--panel-border);">
+                        <option value="1">하루 1회 (아침)</option>
+                        <option value="2">하루 2회 (아침/저녁)</option>
+                        <option value="3" selected>하루 3회 (아침/점심/저녁)</option>
+                        <option value="4">하루 4회 (아침/점심/저녁/취침전)</option>
+                    </select>
                 </div>
                 
-                <div>
-                    <label class="form-label" for="alarm-time">복용 시간</label>
-                    <input type="time" id="alarm-time" class="form-input" required>
+                <!-- ⏰ 동적으로 시간 입력칸이 렌더링되는 영역 -->
+                <div id="dynamic-time-inputs-container" style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; border: 1px solid var(--panel-border);">
+                    <!-- JS에 의해 동적으로 채워짐 -->
                 </div>
                 
-                <button type="submit" class="btn-save" style="margin-top: 10px; width: 100%;">
+                <button type="submit" class="btn-save" style="margin-top: 10px; width: 100%; height: 52px; font-size: 15px;">
                     <i class="fa-solid fa-bell"></i>
-                    <span>지능형 알람 스케줄 추가</span>
+                    <span>지능형 알람 자동 스케줄 등록 ⏰</span>
                 </button>
             </form>
         </div>
