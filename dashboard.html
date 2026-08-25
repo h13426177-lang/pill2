@@ -3316,10 +3316,10 @@
                                 <div class="timeline-header">
                                     <span class="timeline-med-name">${med.name}</span>
                                     <div class="timeline-action-group" style="display:flex; align-items:center; gap:8px;">
-                                        <button class="btn-add-alarm-trigger btn-alarm-click-bind" data-id="${med.id}" title="알람 예약" style="background: rgba(129,140,248,0.15); color: var(--color-primary-light); border: 1px solid rgba(129,140,248,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
+                                        <button class="btn-add-alarm-trigger btn-alarm-click-bind" data-id="${med.id}" data-medname="${escapedMedName}" title="알람 예약" style="background: rgba(129,140,248,0.15); color: var(--color-primary-light); border: 1px solid rgba(129,140,248,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-bell"></i> ⏰ 알림
                                         </button>
-                                        <button class="btn-history-delete btn-delete-click-bind" data-id="${med.id}" title="복용 기록 삭제" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
+                                        <button class="btn-history-delete btn-delete-click-bind" data-id="${med.id}" data-medname="${escapedMedName}" title="복용 기록 삭제" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-trash-can"></i> 삭제
                                         </button>
                                     </div>
@@ -3383,33 +3383,49 @@
 
                 timelineContainer.innerHTML = timelineHTML;
 
-                // ⏰ 스마트 복약 알람 일괄 등록 클릭 바인딩
-                document.querySelectorAll(".btn-alarm-click-bind").forEach(btn => {
-                    btn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const medId = btn.getAttribute("data-id");
-                        const med = globalMedications.find(m => String(m.id) === String(medId));
-                        if (med) {
-                            openAlarmModal(med.name);
-                        } else {
-                            showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                // 🛡️ [우주 초정밀 100% 무결점 클릭 연동 감지기: 글로벌 이벤트 위임]
+                if (!window.hasRegisteredTimelineGlobalDelegation) {
+                    window.hasRegisteredTimelineGlobalDelegation = true;
+                    document.addEventListener("click", function (event) {
+                        // 1. ⏰ 알림 버튼 클릭 감지
+                        const alarmBtn = event.target.closest(".btn-alarm-click-bind");
+                        if (alarmBtn) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                            const medId = alarmBtn.getAttribute("data-id");
+                            const medName = alarmBtn.getAttribute("data-medname");
+                            
+                            const med = globalMedications.find(m => String(m.id) === String(medId));
+                            if (med) {
+                                openAlarmModal(med.name);
+                            } else if (medName) {
+                                openAlarmModal(medName);
+                            } else {
+                                showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                            }
+                            return;
                         }
-                    });
-                });
 
-                // 🗑️ 안전 복용 기록 영구 삭제 클릭 바인딩
-                document.querySelectorAll(".btn-delete-click-bind").forEach(btn => {
-                    btn.addEventListener("click", (e) => {
-                        e.stopPropagation();
-                        const medId = btn.getAttribute("data-id");
-                        const med = globalMedications.find(m => String(m.id) === String(medId));
-                        if (med) {
-                            openSafeDeleteVerifyModal(med.id, med.name);
-                        } else {
-                            showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+                        // 2. 🗑️ 삭제 버튼 클릭 감지
+                        const deleteBtn = event.target.closest(".btn-delete-click-bind");
+                        if (deleteBtn) {
+                            event.stopPropagation();
+                            event.preventDefault();
+                            const medId = deleteBtn.getAttribute("data-id");
+                            const medName = deleteBtn.getAttribute("data-medname");
+                            
+                            const med = globalMedications.find(m => String(m.id) === String(medId));
+                            if (med) {
+                                openSafeDeleteVerifyModal(med.id, med.name);
+                            } else if (medId && medName) {
+                                openSafeDeleteVerifyModal(medId, medName);
+                            } else {
+                                showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+                            }
+                            return;
                         }
-                    });
-                });
+                    }, true); // Use capture phase to intercept before card collapse events
+                }
 
             } catch (err) {
                 console.error(err);
