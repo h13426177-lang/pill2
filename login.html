@@ -16,18 +16,17 @@
            [Core Design System - CSS Variables & Reset]
            ========================================================================== */
         :root {
-            /* 약물 안전 및 스마트 헬스케어에 적합한 메디컬 에메랄드 그린 및 청량한 아쿠아 블루 컬러 팔레트 */
             --bg-gradient: radial-gradient(circle at 50% 50%, #060b0e 0%, #030507 100%);
             --panel-bg: rgba(10, 18, 20, 0.75);
             --panel-border: rgba(255, 255, 255, 0.06);
-            --neon-primary: #10b981;    /* 생명과 안전을 나타내는 상쾌한 에메랄드 그린 */
-            --neon-secondary: #0ea5e9;  /* 청량하고 스마트한 헬스케어 아쿠아 블루 */
-            --text-main: #f3f4f6;       /* 부드러운 화이트 */
-            --text-muted: #9ca3af;      /* 그레이 톤 */
-            --text-accent: #059669;     /* 딥 에메랄드 */
-            --error-color: #ef4444;     /* 경고 레드 */
-            --success-color: #10b981;   /* 성공 그린 */
-            --glow-glow: 0 0 25px rgba(16, 185, 129, 0.2); /* 은은한 에메랄드 빛 글로우 */
+            --neon-primary: #10b981;
+            --neon-secondary: #0ea5e9;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-accent: #059669;
+            --error-color: #ef4444;
+            --success-color: #10b981;
+            --glow-glow: 0 0 25px rgba(16, 185, 129, 0.2);
             --transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -48,6 +47,113 @@
             justify-content: center;
             overflow-x: hidden;
             position: relative;
+            transition: font-size 0.25s ease-out, zoom 0.2s ease-out;
+        }
+
+        /* 💡 [글자 배율 고화질 돋보기 확대 기법 적용] */
+        body.font-scale-medium {
+            zoom: 1.15;
+            -moz-transform: scale(1.15);
+            -moz-transform-origin: top center;
+        }
+        body.font-scale-large {
+            zoom: 1.35;
+            -moz-transform: scale(1.35);
+            -moz-transform-origin: top center;
+        }
+
+        /* 💡 [낮 테마 (라이트 모드) 전용 토큰 변수들] */
+        body.light-theme {
+            --bg-gradient: radial-gradient(circle at 50% 50%, #f8fafc 0%, #e2e8f0 100%);
+            --panel-bg: rgba(255, 255, 255, 0.88);
+            --panel-border: rgba(15, 23, 42, 0.08);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-accent: #059669;
+            --glow-glow: 0 10px 30px rgba(16, 185, 129, 0.08);
+        }
+
+        body.light-theme .auth-card {
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06), var(--glow-glow);
+        }
+
+        body.light-theme .brand-title {
+            background: linear-gradient(to right, #0f172a, #1e293b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        body.light-theme .auth-input {
+            background: rgba(15, 23, 42, 0.03);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            color: #0f172a;
+        }
+
+        body.light-theme .auth-input:focus {
+            background: #fff;
+            border-color: var(--neon-primary);
+        }
+
+        body.light-theme .switch-panel {
+            border-top-color: rgba(15, 23, 42, 0.06);
+        }
+
+        /* 테마 및 글자조절 플로팅 컨트롤러 */
+        .top-controls {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: var(--transition-smooth);
+        }
+
+        .control-btn:hover {
+            background: var(--neon-primary);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .font-scale-group {
+            display: flex;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--panel-border);
+            border-radius: 10px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .btn-font-scale {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-font-scale.active {
+            background: var(--neon-primary);
+            color: #fff;
         }
 
         /* 배경 장식 원형 글로우 (메디컬 안심 그린 및 스마트 블루 톤) */
@@ -336,6 +442,18 @@
 </head>
 <body>
 
+    <!-- 💡 [신규 추가: 로그인 화면 전역 테마 및 글자 돋보기 스케일 컨트롤러] -->
+    <div class="top-controls">
+        <div class="font-scale-group">
+            <button onclick="changeFontScale('standard')" class="btn-font-scale active" id="btn-scale-standard" title="기본 글자">기본</button>
+            <button onclick="changeFontScale('medium')" class="btn-font-scale" id="btn-scale-medium" title="크게">크게</button>
+            <button onclick="changeFontScale('large')" class="btn-font-scale" id="btn-scale-large" title="아주 크게">아주크게</button>
+        </div>
+        <button onclick="toggleTheme()" class="control-btn" id="theme-toggle-btn" title="테마 변경">
+            <i class="fa-solid fa-sun" id="theme-icon"></i>
+        </button>
+    </div>
+
     <div class="auth-container">
         <div class="auth-card">
             
@@ -435,8 +553,69 @@
     <script>
         const API_BASE = "";
 
-        // 페이지 로딩 시 기존 세션 유무 체크 및 자동 리다이렉트
+        // 💡 [신규 추가: 로그인 화면 전용 테마 변경 및 글자 크기 감지]
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById("theme-icon");
+            
+            if (body.classList.contains("light-theme")) {
+                body.classList.remove("light-theme");
+                localStorage.setItem("theme", "dark");
+                if (icon) icon.className = "fa-solid fa-sun";
+                showToast("🌙 밤 테마 (다크 모드)가 활성화되었습니다.", "info");
+            } else {
+                body.classList.add("light-theme");
+                localStorage.setItem("theme", "light");
+                if (icon) icon.className = "fa-solid fa-moon";
+                showToast("☀️ 낮 테마 (라이트 모드)가 활성화되었습니다.", "success");
+            }
+        }
+
+        function changeFontScale(level) {
+            const body = document.body;
+            body.classList.remove("font-scale-medium", "font-scale-large");
+            
+            const btnStandard = document.getElementById("btn-scale-standard");
+            const btnMedium = document.getElementById("btn-scale-medium");
+            const btnLarge = document.getElementById("btn-scale-large");
+            
+            if (btnStandard) btnStandard.classList.remove("active");
+            if (btnMedium) btnMedium.classList.remove("active");
+            if (btnLarge) btnLarge.classList.remove("active");
+            
+            if (level === "medium") {
+                body.classList.add("font-scale-medium");
+                if (btnMedium) btnMedium.classList.add("active");
+                localStorage.setItem("fontScale", "medium");
+                showToast("🔎 글자 크기가 '크게' 확장되었습니다.", "info");
+            } else if (level === "large") {
+                body.classList.add("font-scale-large");
+                if (btnLarge) btnLarge.classList.add("active");
+                localStorage.setItem("fontScale", "large");
+                showToast("🔎 글자 크기가 '아주 크게' (어르신 안심 배율) 확장되었습니다! 👵👴", "success");
+            } else {
+                if (btnStandard) btnStandard.classList.add("active");
+                localStorage.setItem("fontScale", "standard");
+                showToast("🔎 글자 크기가 기본 배율로 복원되었습니다.", "info");
+            }
+        }
+
+        // 페이지 로딩 시 기존 세션 유무 체크 및 자동 리다이렉트 + 환경값 복원
         window.addEventListener('DOMContentLoaded', () => {
+            // 기존 테마 복원
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light-theme");
+                const icon = document.getElementById("theme-icon");
+                if (icon) icon.className = "fa-solid fa-moon";
+            }
+
+            // 기존 글자크기 복원
+            const savedScale = localStorage.getItem("fontScale");
+            if (savedScale) {
+                changeFontScale(savedScale);
+            }
+
             const currentUser = localStorage.getItem("currentUser");
             if (currentUser) {
                 showToast("기존에 안전 로그인된 세션이 발견되었습니다. 대시보드로 이동합니다.", "success");

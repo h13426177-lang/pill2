@@ -20,38 +20,18 @@
            [💡 신규 고도화: 시니어용 글자 조정 클래스들]
            ========================================================================== */
         body {
-            transition: font-size 0.25s ease-out;
+            transition: font-size 0.25s ease-out, zoom 0.2s ease-out;
         }
+        /* 💡 [전역 화면 레이아웃 및 폰트 일괄 돋보기 줌 기법 도입] */
         body.font-scale-medium {
-            font-size: 110%;
+            zoom: 1.15;
+            -moz-transform: scale(1.15);
+            -moz-transform-origin: top center;
         }
-        body.font-scale-medium .timeline-med-name, 
-        body.font-scale-medium .panel-title,
-        body.font-scale-medium .form-label {
-            font-size: 1.15rem;
-        }
-        body.font-scale-medium .timeline-desc,
-        body.font-scale-medium .kfda-td {
-            font-size: 1rem;
-        }
-
         body.font-scale-large {
-            font-size: 125%;
-        }
-        body.font-scale-large .timeline-med-name, 
-        body.font-scale-large .panel-title,
-        body.font-scale-large .form-label {
-            font-size: 1.35rem;
-            font-weight: 800;
-        }
-        body.font-scale-large .timeline-desc,
-        body.font-scale-large .kfda-td {
-            font-size: 1.15rem;
-            font-weight: 600;
-        }
-        body.font-scale-large .form-input {
-            height: 52px;
-            font-size: 1.1rem;
+            zoom: 1.35;
+            -moz-transform: scale(1.35);
+            -moz-transform-origin: top center;
         }
 
         /* ==========================================================================
