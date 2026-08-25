@@ -551,7 +551,11 @@
          [Frontend JavaScript - Logic & Integration]
          ========================================== -->
     <script>
-        const API_BASE = "";
+        const API_BASE = (window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1" || 
+                          window.location.protocol === "file:") 
+                          ? "https://pill2.onrender.com" 
+                          : "";
 
         // 💡 [신규 추가: 로그인 화면 전용 테마 변경 및 글자 크기 감지]
         function toggleTheme() {

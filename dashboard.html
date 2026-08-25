@@ -2767,7 +2767,11 @@
         // 글로벌 상태 변수
         let currentUser = null;
         let selectedFile = null;
-        const API_BASE = "";
+        const API_BASE = (window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1" || 
+                          window.location.protocol === "file:") 
+                          ? "https://pill2.onrender.com" 
+                          : "";
             
         // 달력 상태 관리 변수
         let currentDate = new Date();
