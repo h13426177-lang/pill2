@@ -3300,10 +3300,10 @@
                                 <div class="timeline-header">
                                     <span class="timeline-med-name">${med.name}</span>
                                     <div class="timeline-action-group" style="display:flex; align-items:center; gap:8px;">
-                                        <button class="btn-add-alarm-trigger btn-alarm-click-bind" data-medname="${escapedMedName}" title="알람 예약" style="background: rgba(129,140,248,0.15); color: var(--color-primary-light); border: 1px solid rgba(129,140,248,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
+                                        <button class="btn-add-alarm-trigger btn-alarm-click-bind" data-id="${med.id}" title="알람 예약" style="background: rgba(129,140,248,0.15); color: var(--color-primary-light); border: 1px solid rgba(129,140,248,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-bell"></i> ⏰ 알림
                                         </button>
-                                        <button class="btn-history-delete btn-delete-click-bind" data-id="${med.id}" data-medname="${escapedMedName}" title="복용 기록 삭제" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
+                                        <button class="btn-history-delete btn-delete-click-bind" data-id="${med.id}" title="복용 기록 삭제" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-trash-can"></i> 삭제
                                         </button>
                                     </div>
@@ -3371,8 +3371,13 @@
                 document.querySelectorAll(".btn-alarm-click-bind").forEach(btn => {
                     btn.addEventListener("click", (e) => {
                         e.stopPropagation();
-                        const medName = btn.getAttribute("data-medname");
-                        openAlarmModal(medName);
+                        const medId = btn.getAttribute("data-id");
+                        const med = globalMedications.find(m => m.id === medId);
+                        if (med) {
+                            openAlarmModal(med.name);
+                        } else {
+                            showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                        }
                     });
                 });
 
@@ -3381,8 +3386,12 @@
                     btn.addEventListener("click", (e) => {
                         e.stopPropagation();
                         const medId = btn.getAttribute("data-id");
-                        const medName = btn.getAttribute("data-medname");
-                        openSafeDeleteVerifyModal(medId, medName);
+                        const med = globalMedications.find(m => m.id === medId);
+                        if (med) {
+                            openSafeDeleteVerifyModal(med.id, med.name);
+                        } else {
+                            showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+                        }
                     });
                 });
 
