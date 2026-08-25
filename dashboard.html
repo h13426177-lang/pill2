@@ -2099,6 +2099,47 @@
              [SPA PANEL 1: 마이페이지 - 체질 민감 프로필 관리]
              ========================================================================== -->
         <section id="panel-mypage" class="tab-panel active">
+            <!-- ✍️ [나의 핵심 신체 정보 실시간 간편 편집 보드] -->
+            <div class="card" style="border-left: 5px solid var(--color-primary-light); background: rgba(129, 140, 248, 0.03); margin-bottom: 20px; padding: 22px; border-radius: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;">
+                    <h3 style="margin: 0; font-size: 16.5px; font-weight: 800; color: var(--color-primary-light); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-user-pen" style="font-size: 18px;"></i>
+                        <span>나의 신체 정보 및 기저질환 간편 직접 수정</span>
+                    </h3>
+                    <button type="button" id="btn-quick-profile-save" onclick="handleQuickProfileSave()"
+                            style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-size: 13.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(129, 140, 248, 0.2); transition: all 0.2s;">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>지금 입력한 정보 저장하기</span>
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-signature" style="color: var(--color-primary-light); font-size: 11px;"></i> 사용자 성함
+                        </label>
+                        <input type="text" id="quick-profile-name" class="form-input" placeholder="이름을 적어주세요" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;" required>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-cake-candles" style="color: var(--color-primary-light); font-size: 11px;"></i> 나이 (만 연령)
+                        </label>
+                        <input type="number" id="quick-profile-age" class="form-input" placeholder="만 나이를 적어주세요" min="1" max="120" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;" required>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-notes-medical" style="color: var(--color-primary-light); font-size: 11px;"></i> 보유 기저질환 목록
+                        </label>
+                        <input type="text" id="quick-profile-illness" class="form-input" placeholder="예: 고혈압, 당뇨 (쉼표 구분)" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-hand-holding-medical" style="color: var(--color-primary-light); font-size: 11px;"></i> 알레르기 유발 인자
+                        </label>
+                        <input type="text" id="quick-profile-allergies" class="form-input" placeholder="예: 아스피린, 땅콩 등" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;">
+                    </div>
+                </div>
+            </div>
             <!-- 🔗 [국민건강보험공단 공식 검진결과 연계 배너] -->
             <div class="card" style="border-left: 5px solid var(--color-primary); background: rgba(129, 140, 248, 0.05); margin-bottom: 20px; padding: 20px; border-radius: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
@@ -2892,6 +2933,20 @@
             document.getElementById("profile-age").value = currentUser.age || "";
             document.getElementById("profile-illness").value = currentUser.illness || "";
             document.getElementById("profile-allergies").value = currentUser.allergies || "";
+
+            // 💡 [새로 추가한 초간단 직접 기입식 간편 수정 필드도 함께 로딩]
+            if (document.getElementById("quick-profile-name")) {
+                document.getElementById("quick-profile-name").value = currentUser.name || "";
+            }
+            if (document.getElementById("quick-profile-age")) {
+                document.getElementById("quick-profile-age").value = currentUser.age || "";
+            }
+            if (document.getElementById("quick-profile-illness")) {
+                document.getElementById("quick-profile-illness").value = currentUser.illness || "";
+            }
+            if (document.getElementById("quick-profile-allergies")) {
+                document.getElementById("quick-profile-allergies").value = currentUser.allergies || "";
+            }
             
             // 💡 [신규 확장 건강검진 지표 폼 로드 바인딩]
             document.getElementById("profile-height").value = currentUser.height || "";
@@ -3089,6 +3144,52 @@
         });
 
 
+        async function handleQuickProfileSave() {
+            const name = document.getElementById("quick-profile-name").value.trim();
+            const age = document.getElementById("quick-profile-age").value;
+            const illness = document.getElementById("quick-profile-illness").value.trim();
+            const allergies = document.getElementById("quick-profile-allergies").value.trim();
+
+            if (!name || !age) {
+                showToast("사용자 성함과 만 연령은 필수 입력 항목입니다.", "error");
+                return;
+            }
+
+            const payload = {
+                ...currentUser,
+                name,
+                age,
+                illness,
+                allergies
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/profile/${currentUser.id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "신체 정보 간편 수정 중 서버 오류가 발생했습니다.");
+                }
+
+                showToast("✨ 나의 핵심 신체 정보가 성공적으로 반영되었습니다!", "success");
+                
+                currentUser = data.user;
+                localStorage.setItem("currentUser", JSON.stringify(currentUser));
+                updateUserHeader();
+                loadProfileData();
+
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        }
+
+
         // ==========================================
         // [백엔드 통신: 복용 히스토리 목록 수신 + ⏰알림추가 및 아코디언 식약처 바인딩]
         // ==========================================
@@ -3195,11 +3296,10 @@
                                 <div class="timeline-header">
                                     <span class="timeline-med-name">${med.name}</span>
                                     <div class="timeline-action-group" style="display:flex; align-items:center; gap:8px;">
-                                        <span class="timeline-badge ${med.risk}">${med.risk}</span>
-                                        <button class="btn-add-alarm-trigger" onclick="openAlarmModal('${escapedMedName}')" title="알람 예약">
+                                        <button class="btn-add-alarm-trigger" onclick="event.stopPropagation(); openAlarmModal('${escapedMedName}')" title="알람 예약" style="background: rgba(129,140,248,0.15); color: var(--color-primary-light); border: 1px solid rgba(129,140,248,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-bell"></i> ⏰ 알림
                                         </button>
-                                        <button class="btn-history-delete" onclick="openSafeDeleteVerifyModal('${med.id}', '${escapedMedName}')" title="복용 기록 삭제" style="background: rgba(248,113,113,0.1); color: #f87171; border: 1px solid rgba(248,113,113,0.2); padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;">
+                                        <button class="btn-history-delete" onclick="event.stopPropagation(); openSafeDeleteVerifyModal('${med.id}', '${escapedMedName}')" title="복용 기록 삭제" style="background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s; height: 38px;">
                                             <i class="fa-solid fa-trash-can"></i> 삭제
                                         </button>
                                     </div>
@@ -3855,16 +3955,61 @@
             }
         }
 
+        function generateDynamicTimeInputs(freq, customTimes = null) {
+            const container = document.getElementById("dynamic-time-inputs-container");
+            if (!container) return;
+            
+            container.innerHTML = `<span style="font-size: 12.5px; color: var(--color-primary-light); font-weight: 800; margin-bottom: 4px; display: block;"><i class="fa-solid fa-clock"></i> 상세 복용 시각 설정 (횟수에 맞춤)</span>`;
+            
+            const numFreq = parseInt(freq) || 3;
+            const defaultTimes = {
+                1: ["09:00"],
+                2: ["08:30", "19:00"],
+                3: ["08:00", "13:00", "19:00"],
+                4: ["08:00", "12:30", "18:30", "21:30"]
+            };
+
+            const timesToSet = customTimes || defaultTimes[numFreq] || defaultTimes[3];
+
+            for (let i = 0; i < numFreq; i++) {
+                const timeVal = timesToSet[i] || "09:00";
+                const labelText = numFreq === 1 ? "복용 시간" : `제 ${i+1}회 복용 시간`;
+                const div = document.createElement("div");
+                div.style = "display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px;";
+                div.innerHTML = `
+                    <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">${labelText}</span>
+                    <input type="time" class="form-input alarm-dynamic-time-value" value="${timeVal}" style="width: 140px; text-align: center; height: 38px; padding: 4px 8px; font-size:13px; background: rgba(0,0,0,0.2);" required>
+                `;
+                container.appendChild(div);
+            }
+        }
+
         function openAlarmModal(medicationName) {
             document.getElementById("alarm-target-medication").value = medicationName;
             document.getElementById("alarm-target-display").value = medicationName;
             
             const todayStr = new Date().toISOString().split("T")[0];
-            document.getElementById("alarm-date").value = todayStr;
+            if (document.getElementById("alarm-start-date")) {
+                document.getElementById("alarm-start-date").value = todayStr;
+            }
 
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            document.getElementById("alarm-time").value = timeStr;
+            // 히스토리 목록에서 처방 내역 매칭 조회하여 복용일과 횟수 추출
+            const med = globalMedications.find(m => m.name === medicationName);
+            let daysVal = 3;
+            let freqVal = 3;
+            if (med) {
+                daysVal = med.prescriptionDays || med.days || 3;
+                freqVal = med.prescriptionFrequency || med.frequency || 3;
+            }
+
+            if (document.getElementById("alarm-days-count")) {
+                document.getElementById("alarm-days-count").value = daysVal;
+            }
+            if (document.getElementById("alarm-frequency-select")) {
+                document.getElementById("alarm-frequency-select").value = freqVal;
+            }
+
+            generateDynamicTimeInputs(freqVal);
 
             document.getElementById("alarm-schedule-modal-overlay").classList.add("active");
         }
@@ -3878,34 +4023,58 @@
             e.preventDefault();
 
             const medicationName = document.getElementById("alarm-target-medication").value;
-            const date = document.getElementById("alarm-date").value;
-            const time = document.getElementById("alarm-time").value;
+            const startDateStr = document.getElementById("alarm-start-date") ? document.getElementById("alarm-start-date").value : "";
+            const daysCount = document.getElementById("alarm-days-count") ? parseInt(document.getElementById("alarm-days-count").value) : 1;
+            
+            const timeInputs = document.querySelectorAll(".alarm-dynamic-time-value");
+            const times = Array.from(timeInputs).map(inp => inp.value);
 
-            if (!date || !time) {
-                showToast("날짜와 시간 정보를 모두 정확히 입력해 주세요.", "error");
+            if (!startDateStr || times.some(t => !t)) {
+                showToast("시작일과 복약 시간들을 빠짐없이 기입해 주세요.", "error");
                 return;
             }
 
-            const dateTime = `${date}T${time}`; 
-
             try {
-                const response = await fetch(`${API_BASE}/api/alarms/register/${currentUser.id}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ medicationName, dateTime })
-                });
+                // 시작일 파싱
+                const startDate = new Date(startDateStr);
+                const registerPromises = [];
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || "알람 일정 추가에 실패했습니다.");
+                // 지정한 일수만큼 루프 돌기
+                for (let d = 0; d < daysCount; d++) {
+                    const targetDate = new Date(startDate);
+                    targetDate.setDate(startDate.getDate() + d);
+                    const dateString = targetDate.toISOString().split("T")[0];
 
-                showToast(data.message, "success");
-                closeAlarmModal();
+                    // 각 시간별로 등록 API 다중 동시 요청 준비
+                    times.forEach(time => {
+                        const dateTime = `${dateString}T${time}`;
+                        const requestPromise = fetch(`${API_BASE}/api/alarms/add/${currentUser.id}`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ medicationName, dateTime })
+                        }).then(async res => {
+                            const resData = await res.json();
+                            if (!res.ok) {
+                                throw new Error(resData.error || "일괄 등록 처리 중 응답 예외");
+                            }
+                            return resData;
+                        });
+                        registerPromises.push(requestPromise);
+                    });
+                }
+
+                showToast("⏰ 지정하신 기간 동안의 스마트 복약 알람 일정을 일괄 등록 중입니다...", "info");
                 
+                // 전송 동시 가동
+                await Promise.all(registerPromises);
+
+                showToast("✨ 처방 복용 기간 및 횟수에 맞춘 스마트 복약 일정이 모두 안전하게 일괄 등록되었습니다!", "success");
+                closeAlarmModal();
                 await fetchAlarmsData();
 
             } catch (err) {
-                console.error("알람 등록 중 에러:", err);
-                showToast(err.message, "error");
+                console.error("복약 일정 자동 적립 일괄 등록 실패:", err);
+                showToast(`복약 예약 중 오류 발생: ${err.message}`, "error");
             }
         }
 

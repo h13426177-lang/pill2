@@ -52,7 +52,7 @@ const upload = multer({ storage: storage });
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-const KFDA_API_KEY = "18b45102401f21e29512246b30ecc39f104a7da9879f47b64ea9be4b40bb5894";
+const KFDA_API_KEY = process.env.KFDA_API_KEY;
 const KFDA_API_ENDPOINT = "http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList";
 
 const DB_PATH = path.join(__dirname, "db.json");
@@ -328,7 +328,7 @@ app.post("/api/profile/:userId", (e, s) => {
     try {
         const { userId } = e.params;
         const { 
-            age, illness, allergies,
+            name, age, illness, allergies,
             height, weight, bmi, waist,
             systolic, diastolic, fastingBloodSugar,
             hemoglobin, urineProtein, creatinine, egfr,
@@ -343,6 +343,9 @@ app.post("/api/profile/:userId", (e, s) => {
             return s.status(404).json({ error: "사용자를 찾을 수 없습니다." });
         }
 
+        if (name) {
+            db.users[userIdx].name = name;
+        }
         db.users[userIdx].age = age;
         db.users[userIdx].illness = illness;
         db.users[userIdx].allergies = allergies;
@@ -449,13 +452,15 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
             const visionPrompt = `
 당신은 대한민국 처방전 및 약봉투 이미지를 기가 막히게 해독하여 처방된 "모든 약물 목록"을 한 번에 정밀 추출하는 Pillip 메디컬 약학 비전 AI입니다.
 업로드된 약봉투/처방전 사진을 보고, 안내된 처방 내역에 기재된 "모든 의약품(약명)"을 꼼꼼하게 찾아서 배열 형태로 정리해 주세요.
+특히, 각 약물별 "하루 복용 횟수(예: 하루 3회, 하루 2회, n회)"와 "총 투약일수(복용 기간)"를 정밀 해독해야 합니다.
 반드시 아래 명시된 정확한 JSON 양식으로만 응답해야 합니다:
 
 {
   "medications": [
     {
       "medicationName": "추출된 개별 의약품 명칭 (예: 타이레놀이알서방정, 뮤테란캡슐 등)",
-      "prescriptionDays": 3 (해당 약의 총 투약일수, 숫자로 추출하되 미기재되었거나 판독 불가 시 3으로 기본 세팅)
+      "prescriptionDays": 3, (해당 약의 총 투약일수/복용 기간 일수, 숫자로 추출하되 미기재되었거나 판독 불가 시 3으로 기본 세팅),
+      "prescriptionFrequency": 3 (해당 약의 일일 복용 횟수 n회, 아침/점심/저녁 3회면 3, 아침/저녁 2회면 2, 하루 1회면 1, 숫자로만 추출하되 미기재 시 3으로 기본 세팅)
     }
   ],
   "prescriptionDate": "YYYY-MM-DD (처방일자 혹은 조제일자, 이미지에 없거나 판독 불가 시 오늘 날짜로 기재)"
@@ -479,7 +484,8 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 if (parsedVision.medications && Array.isArray(parsedVision.medications) && parsedVision.medications.length > 0) {
                     targetMedications = parsedVision.medications.map(med => ({
                         name: med.medicationName,
-                        days: parseInt(med.prescriptionDays) || defaultDays
+                        days: parseInt(med.prescriptionDays) || defaultDays,
+                        frequency: parseInt(med.prescriptionFrequency) || 3
                     }));
                 }
             } catch (visionErr) {
@@ -492,7 +498,8 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
             const finalMedName = medicationName || "분석중인 약물";
             targetMedications.push({
                 name: finalMedName,
-                days: defaultDays
+                days: defaultDays,
+                frequency: 3
             });
         }
 
@@ -600,6 +607,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
                 prescriptionDate: finalPDate,
                 prescriptionDays: parsedAnalysis.pharmacology?.prescriptionDays || med.days,
+                prescriptionFrequency: med.frequency || 3, // 💡 [자동 알람 설정용 일일 복용 횟수 저장]
                 pharmacology: {
                     halfLifeHours: parsedAnalysis.pharmacology?.halfLifeHours || 4.0,
                     similarityScore: parsedAnalysis.pharmacology?.similarityScore || parseInt(parsedAnalysis.score) || 15,
@@ -728,27 +736,26 @@ app.get("/api/alarms/:userId", (req, res) => {
 app.post("/api/alarms/add/:userId", (req, res) => {
     try {
         const { userId } = req.params;
-        const { title, time, days } = req.body;
-        if (!title || !time) {
-            return res.status(400).json({ error: "알람 제목과 시간을 기입해 주세요." });
+        const { medicationName, dateTime } = req.body;
+        if (!medicationName || !dateTime) {
+            return res.status(400).json({ error: "의약품 이름과 복용 일시를 입력해 주세요." });
         }
 
         const db = readDB();
         const newAlarm = {
-            id: "alarm_" + Date.now(),
+            id: "alarm_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
             userId,
-            title,
-            time,
-            days: days || [],
-            active: true
+            medicationName,
+            dateTime,
+            triggered: false
         };
 
         db.alarms.push(newAlarm);
         writeDB(db);
-        res.status(201).json(newAlarm);
+        res.status(201).json({ success: true, message: "⏰ 복약 예약 알림이 정상 등록되었습니다!", alarm: newAlarm });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "알람 추가 중 예외 발생" });
+        res.status(500).json({ error: "알람 등록 중 예외가 발생했습니다." });
     }
 });
 
