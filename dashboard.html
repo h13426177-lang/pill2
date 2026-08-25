@@ -2746,10 +2746,7 @@
         // 글로벌 상태 변수
         let currentUser = null;
         let selectedFile = null;
-        // Intelligent backend host detection to resolve fetch issues
-        const API_BASE = (location.protocol === "file:" || !location.port || location.port !== "3000") 
-            ? "http://localhost:3000" 
-            : "";
+        const API_BASE = "";
             
         // 달력 상태 관리 변수
         let currentDate = new Date();
