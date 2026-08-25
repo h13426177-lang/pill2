@@ -3388,7 +3388,7 @@
                     btn.addEventListener("click", (e) => {
                         e.stopPropagation();
                         const medId = btn.getAttribute("data-id");
-                        const med = globalMedications.find(m => m.id === medId);
+                        const med = globalMedications.find(m => String(m.id) === String(medId));
                         if (med) {
                             openAlarmModal(med.name);
                         } else {
@@ -3402,7 +3402,7 @@
                     btn.addEventListener("click", (e) => {
                         e.stopPropagation();
                         const medId = btn.getAttribute("data-id");
-                        const med = globalMedications.find(m => m.id === medId);
+                        const med = globalMedications.find(m => String(m.id) === String(medId));
                         if (med) {
                             openSafeDeleteVerifyModal(med.id, med.name);
                         } else {
