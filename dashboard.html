@@ -3375,11 +3375,11 @@
 
                                 <!-- 👉 오른쪽: 카드 완전히 밖에 독립된 세로형 액션 바 구역 -->
                                 <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center;">
-                                    <button class="btn-alarm-click-bind" data-id="${med.id}" data-medname="${escapedMedName}" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
+                                    <button class="btn-alarm-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openAlarmModalById('${med.id}')" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
                                         <i class="fa-solid fa-bell" style="font-size: 15px;"></i>
                                         <span>⏰ 알림 신청</span>
                                     </button>
-                                    <button class="btn-delete-click-bind" data-id="${med.id}" data-medname="${escapedMedName}" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
+                                    <button class="btn-delete-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openSafeDeleteVerifyModalById('${med.id}')" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
                                         <i class="fa-solid fa-trash-can" style="font-size: 15px;"></i>
                                         <span>🗑️ 이력 삭제</span>
                                     </button>
@@ -3392,49 +3392,24 @@
 
                 timelineContainer.innerHTML = timelineHTML;
 
-                // 🛡️ [우주 초정밀 100% 무결점 클릭 연동 감지기: 글로벌 이벤트 위임]
-                if (!window.hasRegisteredTimelineGlobalDelegation) {
-                    window.hasRegisteredTimelineGlobalDelegation = true;
-                    document.addEventListener("click", function (event) {
-                        // 1. ⏰ 알림 버튼 클릭 감지
-                        const alarmBtn = event.target.closest(".btn-alarm-click-bind");
-                        if (alarmBtn) {
-                            event.stopPropagation();
-                            event.preventDefault();
-                            const medId = alarmBtn.getAttribute("data-id");
-                            const medName = alarmBtn.getAttribute("data-medname");
-                            
-                            const med = globalMedications.find(m => String(m.id) === String(medId));
-                            if (med) {
-                                openAlarmModal(med.name);
-                            } else if (medName) {
-                                openAlarmModal(medName);
-                            } else {
-                                showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
-                            }
-                            return;
-                        }
+                // 🛡️ [우주 초강력 100% 네이티브 직다이렉트 클릭 감지기]
+                window.openAlarmModalById = function(medId) {
+                    const med = globalMedications.find(m => String(m.id) === String(medId));
+                    if (med) {
+                        openAlarmModal(med.name);
+                    } else {
+                        showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                    }
+                };
 
-                        // 2. 🗑️ 삭제 버튼 클릭 감지
-                        const deleteBtn = event.target.closest(".btn-delete-click-bind");
-                        if (deleteBtn) {
-                            event.stopPropagation();
-                            event.preventDefault();
-                            const medId = deleteBtn.getAttribute("data-id");
-                            const medName = deleteBtn.getAttribute("data-medname");
-                            
-                            const med = globalMedications.find(m => String(m.id) === String(medId));
-                            if (med) {
-                                openSafeDeleteVerifyModal(med.id, med.name);
-                            } else if (medId && medName) {
-                                openSafeDeleteVerifyModal(medId, medName);
-                            } else {
-                                showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
-                            }
-                            return;
-                        }
-                    }, true); // Use capture phase to intercept before card collapse events
-                }
+                window.openSafeDeleteVerifyModalById = function(medId) {
+                    const med = globalMedications.find(m => String(m.id) === String(medId));
+                    if (med) {
+                        openSafeDeleteVerifyModal(med.id, med.name);
+                    } else {
+                        showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+                    }
+                };
 
             } catch (err) {
                 console.error(err);
