@@ -3150,36 +3150,6 @@
             // 💡 부분 일치 식약처 후보군 수동 조작 바인딩
             setupKfdaCandidateListeners();
 
-            // 🛡️ [복용 히스토리 이력 카드 직관적 이벤트 위임 가드]
-            const timelineContainer = document.getElementById("medication-timeline");
-            if (timelineContainer) {
-                timelineContainer.addEventListener("click", function(e) {
-                    // 알림 신청 버튼 클릭 판정 (.closest()로 내부 아이콘/스팬 클릭도 완벽 통합)
-                    const alarmBtn = e.target.closest(".btn-alarm-click-bind");
-                    if (alarmBtn) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const medId = alarmBtn.getAttribute("data-med-id");
-                        if (medId && window.openAlarmModalById) {
-                            window.openAlarmModalById(medId);
-                        }
-                        return;
-                    }
-
-                    // 이력 삭제 버튼 클릭 판정 (.closest()로 안전 수렴)
-                    const deleteBtn = e.target.closest(".btn-delete-click-bind");
-                    if (deleteBtn) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const medId = deleteBtn.getAttribute("data-med-id");
-                        if (medId && window.openSafeDeleteVerifyModalById) {
-                            window.openSafeDeleteVerifyModalById(medId);
-                        }
-                        return;
-                    }
-                });
-            }
-
             // PDF 버튼 동적 연결
             document.getElementById("btn-pdf-download").addEventListener("click", downloadPDFReport);
 
@@ -3627,10 +3597,9 @@
                     timelineHTML += `
                         <div class="timeline-item ${med.risk}">
                             <div class="timeline-dot"></div>
-                            <div class="timeline-card" style="display: flex; gap: 20px; align-items: stretch; justify-content: space-between; overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
+                            <div class="timeline-card" style="overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
                                 
-                                <!-- 👈 왼쪽: 모든 복약 데이터 및 정보 영역 -->
-                                <div class="timeline-card-content" style="flex: 1; min-width: 0; position: relative; z-index: 10;">
+                                <div class="timeline-card-content" style="position: relative; z-index: 10;">
                                     <div class="timeline-header" style="margin-bottom: 8px;">
                                         <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
                                     </div>
@@ -3686,18 +3655,6 @@
                                     <div class="accordion-content" id="acc-content-${i}">
                                         ${kfdaDetailHTML}
                                     </div>
-                                </div>
-
-                                <!-- 👉 오른쪽: 카드 완전히 밖에 독립된 세로형 액션 바 구역 -->
-                                <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center; position: relative; z-index: 998; pointer-events: auto !important;">
-                                    <button class="btn-alarm-click-bind" data-med-id="${med.id}" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
-                                        <i class="fa-solid fa-bell" style="font-size: 15px; pointer-events: none !important;"></i>
-                                        <span style="pointer-events: none !important;">⏰ 알림 신청</span>
-                                    </button>
-                                    <button class="btn-delete-click-bind" data-med-id="${med.id}" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
-                                        <i class="fa-solid fa-trash-can" style="font-size: 15px; pointer-events: none !important;"></i>
-                                        <span style="pointer-events: none !important;">🗑️ 이력 삭제</span>
-                                    </button>
                                 </div>
 
                             </div>
