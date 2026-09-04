@@ -697,23 +697,168 @@ app.get("/api/calendar/:userId", (req, res) => {
 app.post("/api/calendar/toggle/:userId", (req, res) => {
     try {
         const { userId } = req.params;
-        const { date } = req.body; 
+        const { date, medId } = req.body; 
         
         const db = readDB();
-        const logIdx = db.calendar.findIndex(c => c.userId === userId && c.date === date);
+        
+        // 그날(date) 복용 기간 내에 있는 해당 유저의 모든 약 목록 추출
+        const targetMeds = db.medications.filter(m => {
+            if (m.userId !== userId) return false;
+            
+            const startDate = new Date(m.prescriptionDate);
+            const checkDate = new Date(date);
+            
+            // 날짜 비교 (시간 성분을 배제하고 순수 YYYY-MM-DD 만으로 범위 계산)
+            startDate.setHours(0,0,0,0);
+            checkDate.setHours(0,0,0,0);
+            
+            const diffTime = checkDate - startDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            const daysLimit = parseInt(m.prescriptionDays) || 3;
+            return diffDays >= 0 && diffDays < daysLimit;
+        });
+        
+        const targetMedIds = targetMeds.map(m => m.id);
+        let logIdx = db.calendar.findIndex(c => c.userId === userId && c.date === date);
 
-        if (logIdx === -1) {
-            db.calendar.push({ userId, date, completed: true });
-            writeDB(db);
-            return res.json({ message: `${date} 복약 완료 체크되었습니다! 💊`, completed: true });
+        if (medId) {
+            // 💊 1. 개별 약물 복용 체크 토글 시나리오
+            if (logIdx === -1) {
+                // 로그가 아예 없었다면 새로 생성
+                const newLog = {
+                    userId,
+                    date,
+                    completed: targetMedIds.length <= 1, // 먹어야 할 약이 하나 이하라면 즉시 완료
+                    checkedMeds: [medId]
+                };
+                db.calendar.push(newLog);
+                writeDB(db);
+                return res.json({ 
+                    message: "해당 약물의 복용이 완료 체크되었습니다! 💊", 
+                    completed: newLog.completed,
+                    checkedMeds: newLog.checkedMeds
+                });
+            } else {
+                // 기존 로그가 있다면 가공
+                const log = db.calendar[logIdx];
+                if (!log.checkedMeds) {
+                    log.checkedMeds = log.completed ? [...targetMedIds] : [];
+                }
+                
+                const medIdx = log.checkedMeds.indexOf(medId);
+                if (medIdx === -1) {
+                    log.checkedMeds.push(medId);
+                } else {
+                    log.checkedMeds.splice(medIdx, 1);
+                }
+                
+                // 그날 먹어야 할 약물들이 모두 체크되었는지 유기적으로 검사
+                const allChecked = targetMedIds.length > 0 && targetMedIds.every(id => log.checkedMeds.includes(id));
+                log.completed = allChecked;
+                
+                // 만약 체크된 약이 아예 없다면 깔끔히 로그 삭제 처리하여 리소스 절약
+                if (log.checkedMeds.length === 0) {
+                    db.calendar.splice(logIdx, 1);
+                    writeDB(db);
+                    return res.json({ message: "해당 날짜의 복용이 모두 취소되었습니다.", completed: false, checkedMeds: [] });
+                }
+                
+                writeDB(db);
+                return res.json({ 
+                    message: "해당 약물의 복용 체크 상태가 변경되었습니다.", 
+                    completed: log.completed,
+                    checkedMeds: log.checkedMeds
+                });
+            }
         } else {
-            db.calendar.splice(logIdx, 1);
-            writeDB(db);
-            return res.json({ message: `${date} 복약 일지가 취소 처리되었습니다.`, completed: false });
+            // 📅 2. 구버전 호환용 전체 날짜 일괄 완료/취소 토글 시나리오
+            if (logIdx === -1) {
+                db.calendar.push({ 
+                    userId, 
+                    date, 
+                    completed: true, 
+                    checkedMeds: targetMedIds 
+                });
+                writeDB(db);
+                return res.json({ message: `${date} 복약 완료 체크되었습니다! 💊`, completed: true, checkedMeds: targetMedIds });
+            } else {
+                db.calendar.splice(logIdx, 1);
+                writeDB(db);
+                return res.json({ message: `${date} 복약 일지가 취소 처리되었습니다.`, completed: false, checkedMeds: [] });
+            }
         }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "일지 처리 중 오류 발생" });
+    }
+});
+
+
+// ==========================================
+// [4-2. 💬 AI 약사 비서 'Pillip(필립)' 1:1 맞춤 대화 API]
+// ==========================================
+app.post("/api/pillip/chat", async (req, res) => {
+    try {
+        const { message, medicationContext } = req.body;
+        if (!message) {
+            return res.status(400).json({ error: "메시지 내용이 비어 있습니다." });
+        }
+
+        const db = readDB();
+        
+        // 특정 환자의 프로필 정보를 추출
+        let user = null;
+        if (medicationContext && medicationContext.userId) {
+            user = db.users.find(u => u.id === medicationContext.userId);
+        }
+        if (!user && db.users.length > 0) {
+            user = db.users[0]; // 폴백: 첫 번째 가입 보호회원
+        }
+
+        const userIllness = user ? (user.illness || "없음") : "없음";
+        const userAllergies = user ? (user.allergies || "없음") : "없음";
+        const userAge = user ? (user.age || "미기재") : "미기재";
+        const userName = user ? (user.name || "보호환자") : "보호환자";
+
+        let contextPrompt = `
+당신은 대한민국 식약처 공식 의약품 지식과 고도의 약학 전문성을 지닌 친절하고 든든한 환자 맞춤형 AI 약사 비서 'Pillip(필립)'입니다.
+말투는 항상 환자를 아끼고 걱정하는 마음을 가득 담아 조곤조곤하고 상냥하게 (~해요, ~입니다, ~해 드릴게요!) 친근한 존댓말로 일관해야 합니다.
+사용자의 질문에 대해 신속하고 정확하며, 의학적으로 완전히 안전한 가이드라인을 반환해 주세요.
+
+[현재 상담 환자 프로필]
+- 성명: ${userName}님
+- 나이: ${userAge}세
+- 기저질환(기왕증): ${userIllness}
+- 알레르기 유발 요인: ${userAllergies}
+`;
+
+        if (medicationContext) {
+            contextPrompt += `
+[환자가 현재 복용 중이거나 문의한 약물 정보]
+- 약물명: ${medicationContext.name}
+- 분석된 위험 등급: ${medicationContext.risk} (위험 점수: ${medicationContext.score}점)
+- 식약처 효능: ${medicationContext.kfdaInfo?.efcy || medicationContext.reason}
+- 식약처 주의사항: ${medicationContext.kfdaInfo?.atpn || "기본 복용 가이드를 준수하세요."}
+`;
+        }
+
+        contextPrompt += `
+[상담 질문]
+"${message}"
+
+위 프로필 정보와 질문에 근거하여, 전문 약사처럼 친절하고 신뢰감 가득하며 이해하기 쉽게 맞춤형 조언을 작성해 주세요. 만약 기저질환이나 알레르기와 조금이라도 충돌할 우려가 있다면 반드시 명확히 주의를 당부해 주셔야 합니다.
+답변은 환자가 스마트폰으로 편안하게 읽을 수 있도록 적절한 이모티콘과 가독성 높은 줄바꿈, 마크다운 강조(**굵게**)를 잘 섞어 작성해 주세요.
+`;
+
+        const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+        const result = await model.generateContent(contextPrompt);
+        const reply = result.response.text().trim();
+
+        res.json({ reply });
+    } catch (err) {
+        console.error("AI 약사 필립 대화 처리 중 에러 발생:", err);
+        res.status(500).json({ reply: "🩺 죄송해요, 잠시 필립 비서의 머릿속 정리가 필요해요. 물 한 컵 드시고 잠시만 후에 다시 말씀해 주세요!" });
     }
 });
 

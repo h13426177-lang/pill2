@@ -40,17 +40,18 @@
         body.light-theme {
             --bg-dark: #f1f5f9;
             --bg-card: #ffffff;
-            --panel-border: rgba(15, 23, 42, 0.08);
+            --panel-border: rgba(15, 23, 42, 0.15);
             
-            --color-primary: #4f46e5;    /* 보다 또렷하고 눈에 잘 들어오는 인디고 */
-            --color-secondary: #7c3aed;  /* 선명한 퍼플 */
-            --color-accent: #3b82f6;
+            --color-primary: #3730a3;    /* 훨씬 또렷하고 깊은 인디고 */
+            --color-secondary: #5b21b6;  /* 선명한 퍼플 */
+            --color-accent: #1d4ed8;
             
-            --text-main: #0f172a;        /* 짙은 슬레이트 차콜 */
-            --text-muted: #64748b;
+            --text-main: #020617;        /* 가장 짙고 명확한 슬레이트 블랙 (가독성 100%) */
+            --text-muted: #334155;       /* 흐릿하지 않은 짙은 회색 */
             
             background-color: var(--bg-dark);
             color: var(--text-main);
+            font-weight: 600;            /* 낮 테마 전체 기본 글자 굵기 대폭 상향 */
         }
 
         body.light-theme .sidebar {
@@ -110,24 +111,46 @@
         /* [💡 낮 테마 가독성 극대화 오버라이드 세트] */
         body.light-theme .timeline-card {
             background: #ffffff !important;
-            border-color: rgba(15, 23, 42, 0.08) !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+            border-color: rgba(15, 23, 42, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
         }
         body.light-theme .timeline-card:hover {
-            border-color: rgba(99, 102, 241, 0.25) !important;
-            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.08) !important;
+            border-color: rgba(99, 102, 241, 0.4) !important;
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15) !important;
         }
         body.light-theme .timeline-med-name {
-            color: #0f172a !important;
+            color: #000000 !important;
+            font-weight: 850 !important; /* 엄청나게 굵고 뚜렷하게 */
         }
         body.light-theme .timeline-desc {
-            color: #334155 !important;
+            color: #111827 !important;
+            font-weight: 700 !important;
         }
         body.light-theme .timeline-date {
-            color: #475569 !important;
+            color: #1f2937 !important;
+            font-weight: 700 !important;
         }
         body.light-theme .timeline-date span {
-            color: #475569 !important;
+            color: #1f2937 !important;
+            font-weight: 700 !important;
+        }
+        
+        body.light-theme p,
+        body.light-theme span,
+        body.light-theme div,
+        body.light-theme li,
+        body.light-theme label,
+        body.light-theme h1,
+        body.light-theme h2,
+        body.light-theme h3,
+        body.light-theme h4 {
+            color: var(--text-main);
+            font-weight: 700 !important;
+        }
+        body.light-theme .text-muted,
+        body.light-theme .panel-subtitle {
+            color: var(--text-muted) !important;
+            font-weight: 650 !important;
         }
         
         body.light-theme .pharmacology-panel {
@@ -2099,6 +2122,31 @@
              [SPA PANEL 1: 마이페이지 - 체질 민감 프로필 관리]
              ========================================================================== -->
         <section id="panel-mypage" class="tab-panel active">
+            <!-- 💡 [신규 추가: 건강정보 수기 입력 가이드라인 카드] -->
+            <div class="card" style="border-left: 5px solid #10b981; background: rgba(16, 185, 129, 0.04); margin-bottom: 20px; padding: 22px; border-radius: 16px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.05);">
+                <div style="display: flex; gap: 15px; align-items: flex-start; flex-wrap: wrap;">
+                    <div style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 20px;">
+                        <i class="fa-solid fa-user-doctor"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 250px;">
+                        <h4 style="margin: 0 0 6px 0; font-size: 15.5px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <span>🩺 건강정보 수기 입력 100% 안심 가이드</span>
+                            <span style="font-size: 11px; font-weight: 700; background: #10b981; color: #fff; padding: 2px 8px; border-radius: 20px;">친절 가이드</span>
+                        </h4>
+                        <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6; font-weight: 600;">
+                            키, 몸무게, 혈압, 공복 혈당, 장기(신장/간) 수치 등을 <strong style="color: #10b981; font-weight: 800;">직접 수기 입력</strong>하여 저장해 보세요! <br>
+                            AI 약사 필립이 환자분의 기저질환과 최신 혈압/혈당 등의 신체 지표를 정밀 분석하여 <strong style="color: #10b981; font-weight: 800;">부작용 없는 복용 가능 여부와 위험 경고</strong>를 사전에 알려드립니다.
+                            <div style="font-size: 12.5px; color: var(--text-main); margin-top: 8px; background: rgba(0,0,0,0.1); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--panel-border);">
+                                💡 <strong>수기 입력 및 연동 방법:</strong> <br>
+                                1. 아래 <strong>[나의 신체 정보 및 기저질환 간편 직접 수정]</strong> 칸에 이름, 만 나이, 보유 기저질환 및 알레르기를 적어주세요. <br>
+                                2. 스크롤을 내려 키/몸무게, 혈압, 공복 혈당 수치 등을 수기로 채워 넣으세요. <br>
+                                3. 입력이 완료되면 맨 밑의 <strong>[프로필 및 헬스 케어 건강 정보 저장]</strong> 버튼을 꾹 누르면 안전하게 저장됩니다!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ✍️ [나의 핵심 신체 정보 실시간 간편 편집 보드] -->
             <div class="card" style="border-left: 5px solid var(--color-primary-light); background: rgba(129, 140, 248, 0.03); margin-bottom: 20px; padding: 22px; border-radius: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;">
@@ -2569,6 +2617,26 @@
 
                 </div>
             </div>
+
+            <!-- 💊 [신규 추가] 클릭한 날짜의 스마트 약물 복약 개별 체크리스트 섹션 -->
+            <div class="card" id="calendar-meds-checklist-card" style="margin-top: 20px; display: none; padding: 24px; border-radius: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--panel-border); padding-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="background: rgba(99, 102, 241, 0.15); color: var(--color-primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fa-solid fa-calendar-check" style="font-size: 18px;"></i>
+                        </div>
+                        <div>
+                            <h3 id="selected-date-title" style="margin: 0; font-size: 17px; font-weight: 800; color: var(--text-main);">2026-09-04 복약 관리</h3>
+                            <p style="margin: 3px 0 0 0; font-size: 12px; color: var(--text-muted); font-weight: 500;">해당 일자에 속하는 복약 대상 개별 약물의 섭취 상태를 수기로 직접 체크해 주세요.</p>
+                        </div>
+                    </div>
+                    <span id="selected-date-progress" style="font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 20px; background: rgba(16, 185, 129, 0.12); color: #10b981;">0/0 완료</span>
+                </div>
+
+                <div id="selected-date-checklist-container" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- 동적으로 체크리스트 목록 삽입 -->
+                </div>
+            </div>
         </section>
 
     </main>
@@ -2792,6 +2860,7 @@
         // 달력 상태 관리 변수
         let currentDate = new Date();
         let calendarCheckedDates = new Set(); // 복약 완료일 ('YYYY-MM-DD' 스트링 세트)
+        let calendarFullLogs = {}; // YYYY-MM-DD -> { completed: boolean, checkedMeds: [medId1, medId2...] } 상세 매핑 캐시
         
         // 스마트 알람 관리 변수
         let globalAlarms = []; // 사용자가 등록해 둔 알람 스케줄 목록 전체
@@ -3147,52 +3216,7 @@
 
                 const data = await response.json();
 
-                if (!response.ok) {
-                    throw new Error(data.error || "프로필 정보 저장 중 오류가 발생했습니다.");
-                }
-
-                showToast(data.message, "success");
-                
-                currentUser = data.user;
-                localStorage.setItem("currentUser", JSON.stringify(currentUser));
-                updateUserHeader();
-
-            } catch (err) {
-                console.error(err);
-                showToast(err.message, "error");
-            }
-        });
-
-
-        async function handleQuickProfileSave() {
-            const name = document.getElementById("quick-profile-name").value.trim();
-            const age = document.getElementById("quick-profile-age").value;
-            const illness = document.getElementById("quick-profile-illness").value.trim();
-            const allergies = document.getElementById("quick-profile-allergies").value.trim();
-
-            if (!name || !age) {
-                showToast("사용자 성함과 만 연령은 필수 입력 항목입니다.", "error");
-                return;
-            }
-
-            const payload = {
-                ...currentUser,
-                name,
-                age,
-                illness,
-                allergies
-            };
-
-            try {
-                const response = await fetch(`${API_BASE}/api/profile/${currentUser.id}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
+                                if (!response.ok) {
                     throw new Error(data.error || "신체 정보 간편 수정 중 서버 오류가 발생했습니다.");
                 }
 
@@ -3207,13 +3231,32 @@
                 console.error(err);
                 showToast(err.message, "error");
             }
-        }
+        });
 
 
         // ==========================================
         // [백엔드 통신: 복용 히스토리 목록 수신 + ⏰알림추가 및 아코디언 식약처 바인딩]
         // ==========================================
         let globalMedications = []; 
+
+        // 🛡️ [우주 초강력 100% 네이티브 직다이렉트 클릭 감지기 - 전역 상시 대피소]
+        window.openAlarmModalById = function(medId) {
+            const med = globalMedications.find(m => String(m.id) === String(medId));
+            if (med) {
+                openAlarmModal(med.name);
+            } else {
+                showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+            }
+        };
+
+        window.openSafeDeleteVerifyModalById = function(medId) {
+            const med = globalMedications.find(m => String(m.id) === String(medId));
+            if (med) {
+                openSafeDeleteVerifyModal(med.id, med.name);
+            } else {
+                showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+            }
+        };
 
         async function fetchUserMedicationHistory() {
             try {
@@ -3237,57 +3280,55 @@
 
                 let timelineHTML = "";
                 data.forEach((med, i) => {
-                    const formattedDate = new Date(med.createdAt).toLocaleString("ko-KR", {
-                        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
+                    const formattedDate = new Date(med.created_at).toLocaleDateString("ko-KR", {
+                        year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                     });
-
-                    const escapedMedName = med.name.replace(/'/g, "\\'");
-
-                    // Real-time pharmacokinetic half-life decay simulation formulas
-                    const pDateStr = med.prescriptionDate || new Date(med.createdAt).toISOString().substring(0, 10);
-                    const prescriptionTime = new Date(pDateStr).getTime();
-                    const hrsPassed = Math.max(0, (Date.now() - prescriptionTime) / (1000 * 60 * 60));
                     
-                    const halfLife = med.pharmacology?.halfLifeHours || 4.0;
-                    const excretionTime = med.pharmacology?.excretionTimeHours || 24;
-                    const simScore = med.pharmacology?.similarityScore || 0;
-                    const simReason = med.pharmacology?.similarityReason || "기존 복약 목록과의 이력이 완전하고 안전한 기전 상태입니다.";
-
-                    // 💡 [처방 일수 연동 자동 소거 스마트 시스템]
-                    const pDays = med.prescriptionDays || 3;
-                    const isPrescriptionExpired = hrsPassed >= (pDays * 24);
-
-                    let residualPercent = 100 * Math.pow(0.5, hrsPassed / halfLife);
-                    if (hrsPassed >= excretionTime || isPrescriptionExpired) {
-                        residualPercent = 0;
+                    const pDateStr = med.prescription_date || "미정";
+                    const pDays = med.prescription_days || 0;
+                    
+                    // 처방전이 만료되었는지 계산
+                    let isPrescriptionExpired = false;
+                    if (med.prescription_date && med.prescription_days) {
+                        const pDate = new Date(med.prescription_date);
+                        const expDate = new Date(pDate.getTime() + (med.prescription_days * 24 * 60 * 60 * 1000));
+                        if (new Date() > expDate) {
+                            isPrescriptionExpired = true;
+                        }
                     }
-                    residualPercent = Math.max(0, Math.min(100, residualPercent));
 
-                    // Accordion info
+                    // 체내 약물 잔존율 시뮬레이션 데이터 계산
+                    let residualPercent = 100;
+                    let halfLife = 6; // 기본 반감기 6시간
+                    let excretionTime = 30; // 기본 배출시간 30시간
+
+                    if (med.prescription_date) {
+                        const hoursPassed = (new Date() - new Date(med.prescription_date)) / (1000 * 60 * 60);
+                        if (hoursPassed > 0) {
+                            residualPercent = Math.max(0, 100 * Math.pow(0.5, hoursPassed / halfLife));
+                        }
+                    }
+
+                    // 약효 구조 유사도 시뮬레이션
+                    const simScore = med.sim_score || 0;
+                    const simReason = med.sim_reason || "안전한 단독 복용 상태입니다.";
+
+                    // 식약처 연동 의약 정보 수집 사전 마크업 구성
                     let kfdaDetailHTML = "";
-                    if (med.kfdaInfo) {
-                        const ki = med.kfdaInfo;
+                    if (med.kfda_info) {
                         kfdaDetailHTML = `
-                            <table class="kfda-table" style="margin-top:10px;">
+                            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
                                 <tr>
-                                    <td class="kfda-th">효능 효과</td>
-                                    <td class="kfda-td">${ki.efcy || "정보 없음"}</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700; width: 120px;">공식 효능효과</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.effect || "정보 없음"}</td>
                                 </tr>
                                 <tr>
-                                    <td class="kfda-th">용법 용량</td>
-                                    <td class="kfda-td">${ki.useMethod || "정보 없음"}</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">용법용량</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.usage || "정보 없음"}</td>
                                 </tr>
                                 <tr>
-                                    <td class="kfda-th">경고 및 주의</td>
-                                    <td class="kfda-td" style="color:#fcd34d;">${ki.warn || ki.atpn || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td class="kfda-th">부작용 이상반응</td>
-                                    <td class="kfda-td" style="color:#f87171;">${ki.se || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td class="kfda-th">상호작용 금기</td>
-                                    <td class="kfda-td" style="color:#818cf8;">${ki.intrc || "정보 없음"}</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">주의사항 (금기)</td>
+                                    <td style="padding: 4px; border: 1px solid var(--panel-border); color: var(--status-danger); font-weight: 600;">${med.kfda_info.caution || "정보 없음"}</td>
                                 </tr>
                             </table>
                             <div class="accordion-btn-group">
@@ -3312,10 +3353,10 @@
                     timelineHTML += `
                         <div class="timeline-item ${med.risk}">
                             <div class="timeline-dot"></div>
-                            <div class="timeline-card" style="display: flex; gap: 20px; align-items: stretch; justify-content: space-between; overflow: hidden; padding: 20px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+                            <div class="timeline-card" style="display: flex; gap: 20px; align-items: stretch; justify-content: space-between; overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
                                 
                                 <!-- 👈 왼쪽: 모든 복약 데이터 및 정보 영역 -->
-                                <div class="timeline-card-content" style="flex: 1; min-width: 0;">
+                                <div class="timeline-card-content" style="flex: 1; min-width: 0; position: relative; z-index: 10;">
                                     <div class="timeline-header" style="margin-bottom: 8px;">
                                         <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
                                     </div>
@@ -3374,12 +3415,12 @@
                                 </div>
 
                                 <!-- 👉 오른쪽: 카드 완전히 밖에 독립된 세로형 액션 바 구역 -->
-                                <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center;">
-                                    <button class="btn-alarm-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openAlarmModalById('${med.id}')" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
+                                <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center; position: relative; z-index: 998; pointer-events: auto;">
+                                    <button class="btn-alarm-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openAlarmModalById('${med.id}')" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
                                         <i class="fa-solid fa-bell" style="font-size: 15px;"></i>
                                         <span>⏰ 알림 신청</span>
                                     </button>
-                                    <button class="btn-delete-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openSafeDeleteVerifyModalById('${med.id}')" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
+                                    <button class="btn-delete-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openSafeDeleteVerifyModalById('${med.id}')" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
                                         <i class="fa-solid fa-trash-can" style="font-size: 15px;"></i>
                                         <span>🗑️ 이력 삭제</span>
                                     </button>
@@ -3392,24 +3433,7 @@
 
                 timelineContainer.innerHTML = timelineHTML;
 
-                // 🛡️ [우주 초강력 100% 네이티브 직다이렉트 클릭 감지기]
-                window.openAlarmModalById = function(medId) {
-                    const med = globalMedications.find(m => String(m.id) === String(medId));
-                    if (med) {
-                        openAlarmModal(med.name);
-                    } else {
-                        showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
-                    }
-                };
 
-                window.openSafeDeleteVerifyModalById = function(medId) {
-                    const med = globalMedications.find(m => String(m.id) === String(medId));
-                    if (med) {
-                        openSafeDeleteVerifyModal(med.id, med.name);
-                    } else {
-                        showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
-                    }
-                };
 
             } catch (err) {
                 console.error(err);
@@ -3848,15 +3872,89 @@
         // ==========================================
         // [백엔드 통신 & UI: 복약 알림 캘린더 생성 및 토글]
         // ==========================================
+        
+        // 🎨 동적 CSS 스타일 주입 헬퍼 (배지 깨짐 원천 방어)
+        function injectCalendarDurationStyles() {
+            if (document.getElementById("injected-calendar-styles")) return;
+            const style = document.createElement("style");
+            style.id = "injected-calendar-styles";
+            style.innerHTML = `
+                .calendar-med-duration-box {
+                    margin-top: 5px;
+                    font-size: 11px;
+                    font-weight: 800;
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    text-align: center;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    line-height: 1.2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 3px;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    transition: all 0.2s;
+                }
+                .calendar-med-duration-box.badge-ongoing {
+                    background: rgba(99, 102, 241, 0.15) !important;
+                    color: #818cf8 !important;
+                    border: 1px solid rgba(99, 102, 241, 0.25) !important;
+                }
+                .calendar-med-duration-box.badge-partial {
+                    background: rgba(245, 158, 11, 0.15) !important;
+                    color: #fbbf24 !important;
+                    border: 1px solid rgba(245, 158, 11, 0.25) !important;
+                }
+                .calendar-med-duration-box.badge-completed {
+                    background: rgba(16, 185, 129, 0.15) !important;
+                    color: #34d399 !important;
+                    border: 1px solid rgba(16, 185, 129, 0.25) !important;
+                }
+                
+                /* 낮 테마 전용 선명한 칼라 스킨 세트 */
+                body.light-theme .calendar-med-duration-box.badge-ongoing {
+                    background: rgba(99, 102, 241, 0.22) !important;
+                    color: #3730a3 !important;
+                    border: 1px solid rgba(99, 102, 241, 0.4) !important;
+                }
+                body.light-theme .calendar-med-duration-box.badge-partial {
+                    background: #fef3c7 !important;
+                    color: #b45309 !important;
+                    border: 1px solid #f59e0b !important;
+                }
+                body.light-theme .calendar-med-duration-box.badge-completed {
+                    background: #d1fae5 !important;
+                    color: #065f46 !important;
+                    border: 1px solid #10b981 !important;
+                }
+                body.light-theme .checklist-item-row {
+                    background: #f8fafc !important;
+                    border-color: rgba(15, 23, 42, 0.12) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         async function fetchCalendarData() {
             try {
+                injectCalendarDurationStyles();
                 const response = await fetch(`${API_BASE}/api/calendar/${currentUser.id}`);
                 if (!response.ok) throw new Error("복약 일지를 가져오지 못했습니다.");
                 
                 const data = await response.json();
                 calendarCheckedDates.clear();
+                calendarFullLogs = {};
+
                 data.forEach(item => {
-                    calendarCheckedDates.add(item.date);
+                    calendarFullLogs[item.date] = {
+                        completed: item.completed,
+                        checkedMeds: item.checkedMeds || []
+                    };
+                    if (item.completed) {
+                        calendarCheckedDates.add(item.date);
+                    }
                 });
 
                 const calendarPanel = document.getElementById("panel-calendar");
@@ -3872,9 +3970,11 @@
         function changeMonth(direction) {
             currentDate.setMonth(currentDate.getMonth() + direction);
             renderCalendar();
+            // 월 변경 시에는 상세 체크리스트 닫아두기
+            document.getElementById("calendar-meds-checklist-card").style.display = "none";
         }
 
-        // 달력 동적 렌더링 함수 (알람 스케줄 배지 연동 고도화)
+        // 달력 동적 렌더링 함수 (알람 스케줄 배지 및 복용기간 띠지 연동 초강력 고도화)
         function renderCalendar() {
             const calendarTitle = document.getElementById("calendar-title");
             const daysGrid = document.getElementById("calendar-days-grid");
@@ -3901,9 +4001,49 @@
 
                 const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
-                const isChecked = calendarCheckedDates.has(dateString);
-                if (isChecked) {
+                // 1. 해당 일자가 복용 기간에 속하는 약물이 있는지 정밀 판별
+                const activeMedsForDay = globalMedications.filter(m => {
+                    if (!m.prescriptionDate) return false;
+                    const pDate = new Date(m.prescriptionDate);
+                    const cDate = new Date(dateString);
+                    pDate.setHours(0,0,0,0);
+                    cDate.setHours(0,0,0,0);
+                    
+                    const diffTime = cDate - pDate;
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const daysLimit = parseInt(m.prescriptionDays) || 3;
+                    return diffDays >= 0 && diffDays < daysLimit;
+                });
+
+                // 2. 체크 상태 및 진행도 배지 마크업 생성
+                const log = calendarFullLogs[dateString];
+                const isCompleted = log ? log.completed : false;
+                if (isCompleted) {
                     dayCell.classList.add("completed");
+                }
+
+                let medDurationBadgeHTML = "";
+                if (activeMedsForDay.length > 0) {
+                    const checkedCount = log && log.checkedMeds ? log.checkedMeds.filter(id => activeMedsForDay.some(m => m.id === id)).length : 0;
+                    const totalCount = activeMedsForDay.length;
+                    
+                    let progressText = `${checkedCount}/${totalCount} 복용`;
+                    let progressClass = "badge-ongoing";
+                    
+                    if (isCompleted || (checkedCount === totalCount && totalCount > 0)) {
+                        progressText = "복약 완료 💚";
+                        progressClass = "badge-completed";
+                        dayCell.classList.add("completed");
+                    } else if (checkedCount > 0) {
+                        progressText = `${checkedCount}/${totalCount} 복용 중`;
+                        progressClass = "badge-partial";
+                    }
+                    
+                    medDurationBadgeHTML = `
+                        <div class="calendar-med-duration-box ${progressClass}" title="${activeMedsForDay.map(m => m.name).join(', ')}">
+                            <i class="fa-solid fa-pills"></i> <span>${progressText}</span>
+                        </div>
+                    `;
                 }
 
                 const currentWeekDay = new Date(year, month, day).getDay();
@@ -3911,6 +4051,7 @@
                 if (currentWeekDay === 0) numColorStyle = "color: var(--status-danger);"; 
                 if (currentWeekDay === 6) numColorStyle = "color: var(--color-primary);"; 
 
+                // 알람 스케줄 매핑
                 const dayAlarms = globalAlarms.filter(alarm => alarm.dateTime.startsWith(dateString));
                 let alarmBadgesHTML = "";
                 if (dayAlarms.length > 0) {
@@ -3920,7 +4061,7 @@
                         const escapedId = alarm.id;
                         alarmBadgesHTML += `
                             <div class="calendar-badge-item" title="${alarm.medicationName} (${timePart})">
-                                <span style="display:flex; align-items:center; gap:2px; overflow:hidden; text-overflow:ellipsis;">
+                                <span style="display:flex; align-items:center; gap:2px; overflow:hidden; text-overflow:ellipsis; font-weight:700;">
                                     <i class="fa-solid fa-clock" style="font-size:8px;"></i> ${timePart} ${alarm.medicationName}
                                 </span>
                                 <button class="calendar-badge-delete-btn" onclick="handleDeleteAlarmClick(event, '${escapedId}')" title="알람 예약 취소">
@@ -3934,40 +4075,175 @@
 
                 dayCell.innerHTML = `
                     <span class="day-num" style="${numColorStyle}">${day}</span>
-                    <span class="completed-mark"><i class="fa-solid fa-square-check"></i></span>
+                    <span class="completed-mark" style="font-size: 15px;"><i class="fa-solid fa-square-check"></i></span>
+                    ${medDurationBadgeHTML}
                     ${alarmBadgesHTML}
                 `;
 
                 dayCell.onclick = (e) => {
-                    if (e.target.closest(".calendar-badge-item")) return;
-                    handleCalendarDayClick(dateString);
+                    if (e.target.closest(".calendar-badge-item") || e.target.closest(".calendar-badge-delete-btn")) return;
+                    handleCalendarDayClick(dateString, activeMedsForDay);
                 };
 
                 daysGrid.appendChild(dayCell);
             }
         }
 
-        async function handleCalendarDayClick(dateString) {
+        // 특정 날짜 클릭 시 하단 스마트 개별 체크리스트 활성화 함수
+        function handleCalendarDayClick(dateString, forcedActiveMeds = null) {
+            const checklistCard = document.getElementById("calendar-meds-checklist-card");
+            const titleEl = document.getElementById("selected-date-title");
+            const progressEl = document.getElementById("selected-date-progress");
+            const containerEl = document.getElementById("selected-date-checklist-container");
+
+            titleEl.innerText = `📅 ${dateString} 복약 정밀 점검`;
+            checklistCard.style.display = "block";
+
+            // 그날 복용 기간에 속하는 약들 필터링
+            const activeMeds = forcedActiveMeds || globalMedications.filter(m => {
+                if (!m.prescriptionDate) return false;
+                const pDate = new Date(m.prescriptionDate);
+                const cDate = new Date(dateString);
+                pDate.setHours(0,0,0,0);
+                cDate.setHours(0,0,0,0);
+                
+                const diffTime = cDate - pDate;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const daysLimit = parseInt(m.prescriptionDays) || 3;
+                return diffDays >= 0 && diffDays < daysLimit;
+            });
+
+            containerEl.innerHTML = "";
+
+            if (activeMeds.length > 0) {
+                const log = calendarFullLogs[dateString];
+                const checkedMeds = log ? log.checkedMeds || [] : [];
+                let checkedCount = 0;
+
+                activeMeds.forEach(med => {
+                    const isChecked = checkedMeds.includes(med.id);
+                    if (isChecked) checkedCount++;
+
+                    // 복용 경과 일차 정보 산정
+                    const pDate = new Date(med.prescriptionDate);
+                    const cDate = new Date(dateString);
+                    pDate.setHours(0,0,0,0);
+                    cDate.setHours(0,0,0,0);
+                    const dayNum = Math.ceil((cDate - pDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                    const itemRow = document.createElement("div");
+                    itemRow.className = "checklist-item-row";
+                    itemRow.style = `
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: space-between; 
+                        background: rgba(255,255,255,0.02); 
+                        padding: 16px 20px; 
+                        border-radius: 12px; 
+                        border: 1px solid var(--panel-border);
+                        transition: all 0.2s;
+                    `;
+
+                    itemRow.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <input type="checkbox" id="chk-${med.id}" style="width: 22px; height: 22px; cursor: pointer; accent-color: var(--color-primary);" ${isChecked ? 'checked' : ''} onchange="toggleMedicationCheck('${dateString}', '${med.id}')">
+                            <label for="chk-${med.id}" style="font-weight: 800; font-size: 15.5px; color: var(--text-main); cursor: pointer; display: flex; flex-direction: column; gap: 4px;">
+                                <span>${med.name}</span>
+                                <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+                                    <i class="fa-solid fa-hourglass-half"></i> 처방 복용 ${dayNum}일차 (하루 ${med.prescriptionFrequency || 3}회 약속)
+                                </span>
+                            </label>
+                        </div>
+                        <span style="font-size: 12px; font-weight: 800; color: ${med.risk === '위험' ? '#ef4444' : med.risk === '주의' ? '#f59e0b' : '#10b981'}; background: rgba(0,0,0,0.1); padding: 5px 12px; border-radius: 20px;">
+                            등급: ${med.risk || '안심'}
+                        </span>
+                    `;
+                    containerEl.appendChild(itemRow);
+                });
+
+                progressEl.innerText = `${checkedCount}/${activeMeds.length} 복약 체크`;
+                progressEl.style.background = checkedCount === activeMeds.length ? "rgba(16, 185, 129, 0.15)" : "rgba(99, 102, 241, 0.15)";
+                progressEl.style.color = checkedCount === activeMeds.length ? "#10b981" : "var(--color-primary)";
+            } else {
+                // 당일 복용 예정 약물이 없는 경우 (구버전 일괄 복약 마킹 지원)
+                const isCheckedAll = calendarCheckedDates.has(dateString);
+                containerEl.innerHTML = `
+                    <div style="text-align: center; padding: 24px; color: var(--text-muted); font-weight: 600; line-height: 1.6;">
+                        <i class="fa-solid fa-circle-info" style="font-size: 26px; color: var(--color-primary); margin-bottom: 12px; display: block;"></i>
+                        이 날짜에는 등록된 처방 기간 약물이 없습니다.<br>
+                        <span style="font-size: 12.5px; font-weight: 500; color: var(--text-muted);">개인 복약 특이 사항 등을 달력에 통째 마킹하고 싶으시면 아래 버튼을 사용하세요.</span>
+                        <button class="btn-save" onclick="toggleEntireDay('${dateString}')" style="margin: 18px auto 0 auto; height: 44px; padding: 0 24px; font-size: 14px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span>${isCheckedAll ? '📅 이 날짜 복약 마크 취소하기' : '📅 이 날짜 복약 완료 마크하기'}</span>
+                        </button>
+                    </div>
+                `;
+                progressEl.innerText = isCheckedAll ? "1/1 완료" : "0/0 완료";
+            }
+
+            // 부드러운 스크롤 이동
+            setTimeout(() => {
+                checklistCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // 개별 약물 체크 변경 핸들러
+        async function toggleMedicationCheck(dateString, medId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/calendar/toggle/${currentUser.id}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date: dateString, medId: medId })
+                });
+                if (!response.ok) throw new Error("개별 복약 상태 기록에 실패했습니다.");
+                const data = await response.json();
+                showToast(data.message, "success");
+                
+                if (data.checkedMeds) {
+                    calendarFullLogs[dateString] = {
+                        completed: data.completed,
+                        checkedMeds: data.checkedMeds
+                    };
+                    if (data.completed) {
+                        calendarCheckedDates.add(dateString);
+                    } else {
+                        calendarCheckedDates.delete(dateString);
+                    }
+                } else {
+                    delete calendarFullLogs[dateString];
+                    calendarCheckedDates.delete(dateString);
+                }
+                
+                renderCalendar();
+                handleCalendarDayClick(dateString); // 리스트 갱신
+            } catch (err) {
+                console.error(err);
+                showToast(err.message, "error");
+            }
+        }
+
+        // 전체 하루 마킹 토글 핸들러
+        async function toggleEntireDay(dateString) {
             try {
                 const response = await fetch(`${API_BASE}/api/calendar/toggle/${currentUser.id}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ date: dateString })
                 });
-
+                if (!response.ok) throw new Error("복약 로그 처리에 실패했습니다.");
                 const data = await response.json();
-                if (!response.ok) throw new Error("복약 일지 수정에 실패했습니다.");
-
                 showToast(data.message, "success");
-
+                
                 if (data.completed) {
                     calendarCheckedDates.add(dateString);
+                    calendarFullLogs[dateString] = { completed: true, checkedMeds: data.checkedMeds || [] };
                 } else {
                     calendarCheckedDates.delete(dateString);
+                    delete calendarFullLogs[dateString];
                 }
-
+                
                 renderCalendar();
-
+                handleCalendarDayClick(dateString);
             } catch (err) {
                 console.error(err);
                 showToast(err.message, "error");
