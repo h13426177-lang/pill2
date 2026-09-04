@@ -718,7 +718,7 @@ app.post("/api/medications/delete/:userId/:medId", (req, res) => {
     try {
         const { userId, medId } = req.params;
         const db = readDB();
-        const medIdx = db.medications.findIndex(m => m.id === medId && m.userId === userId);
+        const medIdx = db.medications.findIndex(m => String(m.id) === String(medId) && String(m.userId) === String(userId));
         
         if (medIdx === -1) {
             return res.status(404).json({ error: "삭제하려는 약물 기록을 찾을 수 없습니다." });
