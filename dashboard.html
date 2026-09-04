@@ -229,6 +229,104 @@
             color: #ffffff !important;
         }
 
+        /* 💡 [낮 테마 전용 : 필립 멀티 세션 분기 대화방 가독성 최적화 세트] */
+        body.light-theme .pillip-chat-rooms-area {
+            background: #f8fafc !important;
+        }
+
+        body.light-theme .pillip-room-card {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
+        }
+
+        body.light-theme .pillip-room-card:hover {
+            background: rgba(99, 102, 241, 0.04) !important;
+            border-color: rgba(99, 102, 241, 0.3) !important;
+            transform: translateY(-2px);
+        }
+
+        body.light-theme .pillip-room-card-title {
+            color: #0f172a !important;
+            font-weight: 800 !important;
+        }
+
+        body.light-theme .pillip-room-card-desc {
+            color: #475569 !important;
+            font-weight: 600 !important;
+        }
+
+        body.light-theme .pillip-room-card-lastmsg {
+            color: #334155 !important;
+            border-top: 1px solid #f1f5f9 !important;
+            font-weight: 550 !important;
+        }
+
+        body.light-theme .pillip-chat-messages-view {
+            background: #f1f5f9 !important;
+        }
+
+        body.light-theme .pillip-chat-messages-area {
+            background: #f1f5f9 !important;
+        }
+
+        /* 말풍선 가독성 극대화 */
+        body.light-theme .pillip-msg-bubble {
+            color: #0f172a !important;
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03) !important;
+            font-weight: 650 !important;
+        }
+
+        /* 환자가 보낸 메시지는 선명한 퍼플-블루 */
+        body.light-theme .pillip-msg-row.sent .pillip-msg-bubble {
+            color: #ffffff !important;
+            background: #4f46e5 !important;
+            border: none !important;
+            font-weight: 600 !important;
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.15) !important;
+        }
+
+        body.light-theme .pillip-chat-input-area {
+            background: #ffffff !important;
+            border-top: 1px solid #cbd5e1 !important;
+        }
+
+        body.light-theme .pillip-chat-input {
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+            font-weight: 650 !important;
+        }
+
+        body.light-theme .pillip-chat-input:focus {
+            border-color: #4f46e5 !important;
+            background: #ffffff !important;
+        }
+
+        body.light-theme .pillip-chat-back-btn {
+            color: #475569 !important;
+        }
+
+        body.light-theme .pillip-chat-back-btn:hover {
+            color: #0f172a !important;
+            background: rgba(15, 23, 42, 0.05) !important;
+        }
+
+        body.light-theme .pillip-chat-close-btn {
+            color: #475569 !important;
+        }
+
+        body.light-theme .pillip-chat-close-btn:hover {
+            color: #0f172a !important;
+        }
+
+        body.light-theme .pillip-chat-header {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
         /* ==========================================================================
            [Core Design System - Tokens & Root variables]
            ========================================================================== */
@@ -1778,6 +1876,127 @@
             transform: scale(1.05);
         }
 
+        /* 💡 [신규 고도화: AI 약사 필립 세션 분기 대화방 UI 스타일 정의] */
+        .pillip-chat-rooms-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: rgba(13, 15, 24, 0.98);
+        }
+
+        .pillip-rooms-scroller {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* 개별 대화방 카드 디자인 */
+        .pillip-room-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .pillip-room-card:hover {
+            background: rgba(129, 140, 248, 0.08);
+            border-color: rgba(129, 140, 248, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .pillip-room-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pillip-room-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 식약처 분석 위험 뱃지 */
+        .pillip-room-card-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .pillip-room-card-badge.badge-safe {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--status-safe);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .pillip-room-card-badge.badge-warning {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--status-warning);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+        }
+
+        .pillip-room-card-badge.badge-danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--status-danger);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+
+        .pillip-room-card-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 룸 카드 안의 실시간 동적 대화 요약본 */
+        .pillip-room-card-lastmsg {
+            font-size: 12px;
+            color: #cbd5e1;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 6px;
+            margin-top: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+        }
+
+        /* 채팅방 상단 뒤로가기 버튼 */
+        .pillip-chat-back-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            border-radius: 6px;
+            transition: var(--transition-smooth);
+        }
+
+        .pillip-chat-back-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
 
         /* ==========================================================================
            [신규 고도화 디자인: 2. 아코디언 상세 정보창 레이아웃 & 테이블 스타일]
@@ -2645,18 +2864,24 @@
          [AI 약학 비서 "Pillip (필립)" 인터랙티브 플로팅 위젯]
          ========================================== -->
     <div class="pillip-floating-widget">
-        <!-- 필립 전용 둥근 글라스모피즘 챗 패널 보드 -->
+        <!-- 필립 전용 둥근 글라스모피즘 챗 패널 보드 (멀티 룸 세션 구조 설계) -->
         <div class="pillip-chat-board" id="pillip-chat-board">
+            
+            <!-- 1. [공통 대화 헤더]: 뒤로가기 단추 및 프로필 텍스트 기재 -->
             <div class="pillip-chat-header">
                 <div class="pillip-chat-title-box">
+                    <!-- 뒤로가기 버튼 (대화 중일 때만 목록으로 돌아가기 위해 노출) -->
+                    <button id="pillip-back-btn" class="pillip-chat-back-btn" style="display: none;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
                     <div class="pillip-profile-img">
                         <i class="fa-solid fa-user-doctor"></i>
                     </div>
                     <div class="pillip-chat-title-texts">
-                        <span class="pillip-main-name">AI 약사 Pillip (필립)</span>
-                        <span class="pillip-sub-name">
+                        <span class="pillip-main-name" id="pillip-header-title">AI 약사 Pillip</span>
+                        <span class="pillip-sub-name" id="pillip-header-status">
                             <span class="online-dot"></span>
-                            <span>실시간 안심 진단 서비스</span>
+                            <span>실시간 안심 비서</span>
                         </span>
                     </div>
                 </div>
@@ -2665,25 +2890,29 @@
                 </button>
             </div>
             
-            <!-- 챗 영역 스크롤 바디 -->
-            <div class="pillip-chat-messages-area" id="pillip-messages-box">
-                <!-- 웰컴 첫 인사말 버블 -->
-                <div class="pillip-msg-row received">
-                    <div class="pillip-msg-bubble">
-                        안녕하세요! 💊 당신의 전임 스마트 AI 약학 동반자 **Pillip(필립)**이랍니다! ✨<br><br>
-                        제가 처방전 내에 있는 어려운 한글 약어들과 식약처 데이터를 기저질환과 비교해서 조곤조곤 조언해 드릴게요. <br><br>
-                        "복용 히스토리"에서 임의의 약품 카드를 누르시면 제가 자동으로 튀어나와 1:1 맞춤형 보충 지도를 수행해 드릴게요! 🩺 궁금한 약물 지식이 있다면 편하게 물어보세요!
-                    </div>
+            <!-- 2. [채팅방 목록 뷰]: 개별 약물방 및 일반 상담방을 나열하여 세션 분기 -->
+            <div class="pillip-chat-rooms-area" id="pillip-rooms-area">
+                <div class="pillip-rooms-scroller" id="pillip-rooms-scroller">
+                    <!-- 💡 자바스크립트 renderChatRooms()를 통해 동적 데이터가 주입됩니다. -->
                 </div>
             </div>
 
-            <!-- 챗 입력 영역 하단 바 -->
-            <div class="pillip-chat-input-area">
-                <input type="text" class="pillip-chat-input" id="pillip-user-input" placeholder="필립 비서에게 물어보고 싶은 약학 궁금증..." autocomplete="off">
-                <button class="pillip-chat-send-btn" id="pillip-send-btn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
+            <!-- 3. [실시간 대화 뷰]: 클릭된 특정 세션 대화방 내부에서 챗봇 메시지를 연동 -->
+            <div class="pillip-chat-messages-view" id="pillip-chat-view" style="display: none; flex-direction: column; flex-grow: 1; overflow: hidden;">
+                <!-- 챗 영역 스크롤 바디 -->
+                <div class="pillip-chat-messages-area" id="pillip-messages-box">
+                    <!-- 웰컴 혹은 이전 암호화 상담 내역들이 복구 해독되어 실시간 렌더링됩니다. -->
+                </div>
+
+                <!-- 챗 입력 영역 하단 바 -->
+                <div class="pillip-chat-input-area">
+                    <input type="text" class="pillip-chat-input" id="pillip-user-input" placeholder="필립 비서에게 물어보고 싶은 약학 궁금증..." autocomplete="off">
+                    <button class="pillip-chat-send-btn" id="pillip-send-btn">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
             </div>
+            
         </div>
 
         <!-- 필립 동그란 실행 버블 토글 -->
@@ -4530,26 +4759,41 @@
 
 
         // ==========================================
-        // [신규 고도화 자바스크립트: 1. AI 약사 비서 'Pillip(필립)' 리스너 & 통신 파이프라인]
+        // [신규 고도화 자바스크립트: 1. AI 약사 비서 'Pillip(필립)' 멀티 세션 분기 제어 엔진]
         // ==========================================
+        let activeSessionId = null; // 현재 활성화된 채팅 세션 ID (null 이면 방 목록 상태)
+
+        /**
+         * 💡 AI 약사 필립 플로팅 위젯의 모든 DOM 이벤트 리스너를 조율하고 가동합니다.
+         */
         function setupPillipListeners() {
             const trigger = document.getElementById("pillip-trigger");
             const board = document.getElementById("pillip-chat-board");
             const closeBtn = document.getElementById("pillip-close-btn");
+            const backBtn = document.getElementById("pillip-back-btn");
             const sendBtn = document.getElementById("pillip-send-btn");
             const userInput = document.getElementById("pillip-user-input");
 
+            // 1. 우하단 플로팅 챗 버블 클릭 시 토글
             trigger.addEventListener("click", () => {
                 board.classList.toggle("active");
                 if (board.classList.contains("active")) {
-                    userInput.focus();
+                    // 열릴 때 환자의 최신 분기 상담실 목록을 즉시 실시간 렌더링
+                    renderChatRooms();
                 }
             });
 
+            // 2. 챗 보드 접기 단추 클릭
             closeBtn.addEventListener("click", () => {
                 board.classList.remove("active");
             });
 
+            // 3. 챗 헤더 뒤로가기 버튼 클릭 시 대화방 탈출 및 목록 복귀
+            backBtn.addEventListener("click", () => {
+                exitChatRoom();
+            });
+
+            // 4. 메시지 전송 단추 연계
             sendBtn.addEventListener("click", sendChatMessageToPillip);
             userInput.addEventListener("keydown", (e) => {
                 if (e.key === "Enter") {
@@ -4558,25 +4802,225 @@
             });
         }
 
-        // 대시보드 밖의 개별 아이콘에서 아코디언 "Pillip 약사 AI 진단받기" 트리거 시 연계 로직
-        function triggerPillipConsultation(medIdx) {
-            const med = globalMedications[medIdx];
-            const board = document.getElementById("pillip-chat-board");
-            board.classList.add("active");
+        /**
+         * 💡 서버로부터 사용자의 모든 세션 분기 채팅방(일반 상담실 + 등록 약물 전용방) 목록을 가져와 렌더링합니다.
+         */
+        async function renderChatRooms() {
+            const scroller = document.getElementById("pillip-rooms-scroller");
+            if (!scroller) return;
 
-            // 로딩 메시지 출력 및 API 전송
-            appendPillipMessage(`💊 안전 약학 이력에서 **'${med.name}'**을(를) 선택하셨군요! 이 약품과 제 프로필 간의 특이 분석 사항을 정밀 검토해 드릴게요. 잠시만요...`, "received");
-            
-            sendAutomatedContextToPillip(med);
+            scroller.innerHTML = `
+                <div style="text-align: center; padding: 30px 10px; color: var(--text-muted); font-size: 12px;">
+                    <i class="fa-solid fa-spinner fa-spin" style="margin-bottom: 8px; font-size: 18px; color: var(--color-primary);"></i>
+                    <p>보안 대화 채널 및 약물 분석방 개설 중...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chats/rooms/${currentUser.id}`);
+                const rooms = await response.json();
+                scroller.innerHTML = "";
+
+                rooms.forEach(room => {
+                    const card = document.createElement("div");
+                    card.className = "pillip-room-card";
+                    
+                    // 위험도에 따라 적합한 스타일의 시그널 뱃지 획득
+                    let badgeClass = "badge-safe";
+                    if (room.risk === "주의") badgeClass = "badge-warning";
+                    if (room.risk === "위험") badgeClass = "badge-danger";
+
+                    const badgeHtml = room.sessionId !== "general" 
+                        ? `<span class="pillip-room-card-badge ${badgeClass}">${room.risk}</span>` 
+                        : `<span class="pillip-room-card-badge badge-safe">온라인</span>`;
+
+                    card.innerHTML = `
+                        <div class="pillip-room-card-header">
+                            <span class="pillip-room-card-title">
+                                ${room.sessionId === 'general' ? '<i class="fa-solid fa-comments" style="color: var(--color-primary);"></i>' : '<i class="fa-solid fa-capsules" style="color: var(--color-accent);"></i>'}
+                                <span>${room.title}</span>
+                            </span>
+                            ${badgeHtml}
+                        </div>
+                        <div class="pillip-room-card-desc">${room.description}</div>
+                        <div class="pillip-room-card-lastmsg">${room.lastMessage}</div>
+                    `;
+
+                    // 카드 클릭 시 해당 독립 분기 채팅방으로 페이드인 진입
+                    card.addEventListener("click", () => {
+                        enterChatRoom(room.sessionId, room.title);
+                    });
+
+                    scroller.appendChild(card);
+                });
+            } catch (err) {
+                console.error("대화방 목록 렌더링 에러:", err);
+                scroller.innerHTML = `
+                    <div style="text-align:center; padding:20px; color: var(--status-danger); font-size: 12px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:20px; margin-bottom:8px;"></i>
+                        <p>대화방 목록을 불러오지 못했습니다.</p>
+                    </div>
+                `;
+            }
         }
 
-        // 메시지 렌더링 서브 헬퍼
+        /**
+         * 💡 특정 대화방 내부로 진입하여 이전 암호화 상담 내역을 해독하고 실시간 렌더링합니다.
+         * @param {string} sessionId 타겟 세션 ID
+         * @param {string} title 방 타이틀 명칭
+         */
+        async function enterChatRoom(sessionId, title) {
+            activeSessionId = sessionId;
+
+            // 1. UI 상태를 "대화방 뷰"로 전격 교체 및 슬라이딩
+            document.getElementById("pillip-header-title").innerText = title;
+            document.getElementById("pillip-back-btn").style.display = "flex";
+            document.getElementById("pillip-rooms-area").style.display = "none";
+            
+            const chatView = document.getElementById("pillip-chat-view");
+            chatView.style.display = "flex";
+
+            const messagesBox = document.getElementById("pillip-messages-box");
+            messagesBox.innerHTML = `
+                <div id="pillip-history-loading" style="text-align: center; padding: 50px 10px; color: var(--text-muted); font-size: 12px;">
+                    <i class="fa-solid fa-shield-halved fa-spin" style="font-size:24px; color: var(--color-accent); margin-bottom: 12px;"></i>
+                    <p>기밀 보관된 대화록을 복호화 복원하는 중입니다...</p>
+                </div>
+            `;
+
+            try {
+                // 2. 서버에서 보존된 해당 방의 암호화 히스토리 가져오기
+                const response = await fetch(`${API_BASE}/api/chats/history/${currentUser.id}/${sessionId}`);
+                const history = await response.json();
+                
+                // 로딩 인디케이터 소거
+                const loading = document.getElementById("pillip-history-loading");
+                if (loading) loading.remove();
+
+                if (history.length === 0) {
+                    // 웰컴 및 RAG 자동 가이드 대응
+                    if (sessionId === "general") {
+                        // 일반 상담방의 경우 수동 웰컴 렌더링 (서버 저장 없이)
+                        appendPillipMessage(`안녕하세요, ${currentUser.name}님! 💊 당신의 전임 스마트 AI 약학 동반자 **Pillip(필립)**이랍니다! ✨<br><br>평소 드시던 만성 질환 약이나 알레르기 증상이 복용 약물들과 충돌하진 않는지, 영양제 섭취 타이밍은 언제인지 편하게 속삭여 주세요. 제가 상세히 알려드릴게요!`, "received");
+                    } else {
+                        // 💡 [RAG 감동 UX]: 약물 전용 상담방에 첫 진입하여 대화가 없을 시, AI가 처음에 자동으로 "선제적 예측 가이드라인 소견"을 환자에게 브리핑하도록 자동 시동!!
+                        showPillipTypingEffect();
+                        const triggerMsg = `[선제 검진 트리거] 안녕하세요 필립 약사님! 제가 복용 약력에 이 약을 등록했는데 제 프로필 기준으로 부작용 및 복약 지도 소견을 즉시 요약 브리핑해 주세요.`;
+                        
+                        const triggerResponse = await fetch(`${API_BASE}/api/chats/message`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: currentUser.id, sessionId, message: triggerMsg })
+                        });
+                        const triggerData = await triggerResponse.json();
+                        removePillipTypingEffect();
+                        appendPillipMessage(triggerData.reply, "received");
+                    }
+                } else {
+                    // 복호화된 대화 기록 순차적으로 렌더링
+                    history.forEach(chat => {
+                        // 선제 검진용 트리거 명령문 텍스트는 UI 화면에서 생략 처리하여 UX 향상
+                        if (chat.message.startsWith("[선제 검진 트리거]")) return;
+                        appendPillipMessage(chat.message, chat.sender === "user" ? "sent" : "received");
+                    });
+                }
+            } catch (err) {
+                console.error("채팅방 입장 에러:", err);
+                messagesBox.innerHTML = `
+                    <div style="text-align:center; padding:30px; color: var(--status-danger); font-size:12px;">
+                        <i class="fa-solid fa-circle-exclamation" style="font-size:24px; margin-bottom:10px;"></i>
+                        <p>보안 통신망 연결 과정 중 예외가 발생했습니다.</p>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * 💡 현재 대화방에서 완전히 퇴장하여 UI를 방 목록 뷰로 원상복구하고 스크롤을 갱신합니다.
+         */
+        function exitChatRoom() {
+            activeSessionId = null;
+
+            // 1. UI 헤더와 뒤로가기 버튼 리셋
+            document.getElementById("pillip-header-title").innerText = "AI 약사 Pillip";
+            document.getElementById("pillip-back-btn").style.display = "none";
+            
+            // 2. 뷰 레이아웃 가시성 조율
+            document.getElementById("pillip-chat-view").style.display = "none";
+            document.getElementById("pillip-rooms-area").style.display = "block";
+
+            // 3. 대화방 별 최신 메시지 반영을 위해 룸 목록 새로고침
+            renderChatRooms();
+        }
+
+        /**
+         * 💡 사용자가 입력한 메시지를 서버에 암호화하여 기록하고, Gemini의 RAG 소견을 받아 화면에 표시합니다.
+         */
+        async function sendChatMessageToPillip() {
+            const userInput = document.getElementById("pillip-user-input");
+            const text = userInput.value.trim();
+            if (!text || !activeSessionId) return;
+
+            // 사용자가 타이핑한 질문 즉시 화면에 그리기
+            appendPillipMessage(text, "sent");
+            userInput.value = "";
+            userInput.focus();
+
+            // 필립 비서 타이핑 모션 이펙트 렌더링
+            showPillipTypingEffect();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/chats/message`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: currentUser.id,
+                        sessionId: activeSessionId,
+                        message: text
+                    })
+                });
+
+                const data = await response.json();
+                removePillipTypingEffect();
+
+                // 복호화된 AI 답변 렌더링
+                appendPillipMessage(data.reply, "received");
+
+            } catch (err) {
+                console.error("메시지 송수신 에러:", err);
+                removePillipTypingEffect();
+                appendPillipMessage("🩺 아이코, 필립 약사와의 안전 통신 회선에 순간 혼선이 생겼어요. 다시 한 번 말씀해 주시겠어요? ✨", "received");
+            }
+        }
+
+        /**
+         * 💡 대시보드 약력 아코디언에서 호출되는 "Pillip 약사 AI 진단받기" 연동 장치
+         * @param {number} medIdx globalMedications 배열 내의 약물 인덱스 번호
+         */
+        function triggerPillipConsultation(medIdx) {
+            const med = globalMedications[medIdx];
+            if (!med) return;
+
+            const board = document.getElementById("pillip-chat-board");
+            
+            // 1. 플로팅 챗 보드를 우아하게 슬라이드 업 개시
+            board.classList.add("active");
+
+            // 2. 해당 약품의 ID를 고유 세션방으로 설정하여 다이렉트 전환
+            enterChatRoom(med.id, `💊 ${med.name} 전문 상담실`);
+        }
+
+        /**
+         * 💡 대화방 내부에 메시지 말풍선을 추가하고 자동 스크롤합니다.
+         */
         function appendPillipMessage(text, sender) {
             const box = document.getElementById("pillip-messages-box");
+            if (!box) return;
+
             const row = document.createElement("div");
             row.className = `pillip-msg-row ${sender}`;
 
-            // 줄바꿈 보정 및 마크다운 단순 처리
+            // 줄바꿈 보정 및 마크다운 단순 파싱 처리
             let formattedText = text.replace(/\n/g, "<br>");
             // **굵은 글씨** 마크다운 대응
             formattedText = formattedText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
@@ -4586,9 +5030,13 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        // 타이핑 모션 이펙트 뷰 출력
+        /**
+         * 💡 AI 필립 약사의 복약 진단 숙고 타이핑 모션을 화면에 띄웁니다.
+         */
         function showPillipTypingEffect() {
             const box = document.getElementById("pillip-messages-box");
+            if (!box) return;
+
             const row = document.createElement("div");
             row.className = "pillip-msg-row received";
             row.id = "pillip-typing-indicator";
@@ -4605,66 +5053,13 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        // 타이핑 표시 소거
+        /**
+         * 💡 숙고 타이핑 모션을 소거합니다.
+         */
         function removePillipTypingEffect() {
             const indicator = document.getElementById("pillip-typing-indicator");
             if (indicator) {
                 indicator.remove();
-            }
-        }
-
-        // 수동 자유 질문 핸들러
-        async function sendChatMessageToPillip() {
-            const userInput = document.getElementById("pillip-user-input");
-            const text = userInput.value.trim();
-            if (!text) return;
-
-            appendPillipMessage(text, "sent");
-            userInput.value = "";
-            showPillipTypingEffect();
-
-            try {
-                // 현재 등록되어 있는 가장 최신의 약물 분석을 기본 컨텍스트 정보로 탑재
-                const context = globalMedications.length > 0 ? globalMedications[0] : null;
-
-                const response = await fetch(`${API_BASE}/api/pillip/chat`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: text, medicationContext: context })
-                });
-
-                const data = await response.json();
-                removePillipTypingEffect();
-                appendPillipMessage(data.reply, "received");
-
-            } catch (err) {
-                console.error(err);
-                removePillipTypingEffect();
-                appendPillipMessage("💊 아이코, 필립 비서와의 안심 통신 회선에 노이즈가 발생했어요. 정량 약물을 드시고 한 번만 더 시도해 주실래요?", "received");
-            }
-        }
-
-        // 약품 아코디언에서 호출 시 기동되는 전용 분석 API 송수신
-        async function sendAutomatedContextToPillip(medRecord) {
-            showPillipTypingEffect();
-
-            try {
-                const message = `제가 복용 히스토리에서 '${medRecord.name}' 약품 카드를 선택했습니다. 기저질환(${currentUser.illness}) 및 알레르기(${currentUser.allergies}) 대비, 이 약물의 안전도 분석 사유를 설명해 주시고, 어떻게 복용해야 할지 친근하게 처방 가이드라인을 알려주세요.`;
-                
-                const response = await fetch(`${API_BASE}/api/pillip/chat`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: message, medicationContext: medRecord })
-                });
-
-                const data = await response.json();
-                removePillipTypingEffect();
-                appendPillipMessage(data.reply, "received");
-
-            } catch (err) {
-                console.error(err);
-                removePillipTypingEffect();
-                appendPillipMessage(`💊 '${medRecord.name}'에 대한 AI 예측 진단에 성공하지 못했습니다. 하지만 항상 정해진 규칙대로 안전하게 복용하시는 것을 추천드려요!`, "received");
             }
         }
 
