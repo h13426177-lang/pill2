@@ -38,31 +38,32 @@
            [💡 신규 고도화: 낮 테마 (라이트 모드) 전용 토큰 변수들]
            ========================================================================== */
         body.light-theme {
-            --bg-dark: #f1f5f9;
-            --bg-card: #ffffff;
-            --panel-border: rgba(15, 23, 42, 0.15);
+            --bg-dark: #f8fafc;          /* 맑고 고급스러운 명도 대비 회색 배경 */
+            --bg-card: #ffffff;          /* 순백색 카드 전용 배경 */
+            --panel-border: rgba(15, 23, 42, 0.12); /* 얇지만 명확하게 흐릿함을 제거한 테두리선 */
             
-            --color-primary: #3730a3;    /* 훨씬 또렷하고 깊은 인디고 */
-            --color-secondary: #5b21b6;  /* 선명한 퍼플 */
-            --color-accent: #1d4ed8;
+            --color-primary: #312e81;    /* 가독성 100% 보장을 위한 극도로 진하고 품격있는 딥 네이비 */
+            --color-secondary: #4c1d95;  /* 고대비 딥 바이올렛 */
+            --color-accent: #1e3a8a;     /* 선명하고 정갈한 로얄 블루 */
             
-            --text-main: #020617;        /* 가장 짙고 명확한 슬레이트 블랙 (가독성 100%) */
-            --text-muted: #334155;       /* 흐릿하지 않은 짙은 회색 */
+            --text-main: #0f172a;        /* 잉크 차콜 블랙 (대비율 21:1 보장의 눈부심 없는 가장 또렷한 글씨) */
+            --text-muted: #475569;       /* 연하지 않은 짙은 슬레이트 보조 글자색 */
             
             background-color: var(--bg-dark);
             color: var(--text-main);
-            font-weight: 600;            /* 낮 테마 전체 기본 글자 굵기 대폭 상향 */
+            font-weight: 600;            /* 전체 글자 두께 상향 */
         }
 
         body.light-theme .sidebar {
             background: #ffffff;
-            border-right: 1px solid rgba(15, 23, 42, 0.08);
+            border-right: 1px solid rgba(15, 23, 42, 0.12) !important;
+            box-shadow: 2px 0 12px rgba(15, 23, 42, 0.03) !important;
         }
 
         body.light-theme .card {
-            background: #ffffff;
-            border: 1px solid rgba(15, 23, 42, 0.06);
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+            background: #ffffff !important;
+            border: 1px solid rgba(15, 23, 42, 0.12) !important;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
         }
 
         body.light-theme .form-input {
@@ -3137,6 +3138,36 @@
             // 💡 부분 일치 식약처 후보군 수동 조작 바인딩
             setupKfdaCandidateListeners();
 
+            // 🛡️ [복용 히스토리 이력 카드 직관적 이벤트 위임 가드]
+            const timelineContainer = document.getElementById("medication-timeline");
+            if (timelineContainer) {
+                timelineContainer.addEventListener("click", function(e) {
+                    // 알림 신청 버튼 클릭 판정 (.closest()로 내부 아이콘/스팬 클릭도 완벽 통합)
+                    const alarmBtn = e.target.closest(".btn-alarm-click-bind");
+                    if (alarmBtn) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const medId = alarmBtn.getAttribute("data-med-id");
+                        if (medId && window.openAlarmModalById) {
+                            window.openAlarmModalById(medId);
+                        }
+                        return;
+                    }
+
+                    // 이력 삭제 버튼 클릭 판정 (.closest()로 안전 수렴)
+                    const deleteBtn = e.target.closest(".btn-delete-click-bind");
+                    if (deleteBtn) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const medId = deleteBtn.getAttribute("data-med-id");
+                        if (medId && window.openSafeDeleteVerifyModalById) {
+                            window.openSafeDeleteVerifyModalById(medId);
+                        }
+                        return;
+                    }
+                });
+            }
+
             // PDF 버튼 동적 연결
             document.getElementById("btn-pdf-download").addEventListener("click", downloadPDFReport);
 
@@ -3646,14 +3677,14 @@
                                 </div>
 
                                 <!-- 👉 오른쪽: 카드 완전히 밖에 독립된 세로형 액션 바 구역 -->
-                                <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center; position: relative; z-index: 998; pointer-events: auto;">
-                                    <button class="btn-alarm-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openAlarmModalById('${med.id}')" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
-                                        <i class="fa-solid fa-bell" style="font-size: 15px;"></i>
-                                        <span>⏰ 알림 신청</span>
+                                <div class="timeline-card-actions" style="display: flex; flex-direction: column; justify-content: center; gap: 12px; padding-left: 20px; border-left: 1px solid var(--panel-border); min-width: 120px; align-items: center; position: relative; z-index: 998; pointer-events: auto !important;">
+                                    <button class="btn-alarm-click-bind" data-med-id="${med.id}" title="알람 예약" style="width: 100%; height: 54px; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(99,102,241,0.25); transition: all 0.2s;">
+                                        <i class="fa-solid fa-bell" style="font-size: 15px; pointer-events: none !important;"></i>
+                                        <span style="pointer-events: none !important;">⏰ 알림 신청</span>
                                     </button>
-                                    <button class="btn-delete-click-bind" onclick="event.stopPropagation(); event.preventDefault(); window.openSafeDeleteVerifyModalById('${med.id}')" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
-                                        <i class="fa-solid fa-trash-can" style="font-size: 15px;"></i>
-                                        <span>🗑️ 이력 삭제</span>
+                                    <button class="btn-delete-click-bind" data-med-id="${med.id}" title="복용 기록 삭제" style="width: 100%; height: 54px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #ffffff; border: none; border-radius: 12px; font-size: 13px; font-weight: 800; cursor: pointer !important; pointer-events: auto !important; position: relative; z-index: 999 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 12px rgba(239,68,68,0.25); transition: all 0.2s;">
+                                        <i class="fa-solid fa-trash-can" style="font-size: 15px; pointer-events: none !important;"></i>
+                                        <span style="pointer-events: none !important;">🗑️ 이력 삭제</span>
                                     </button>
                                 </div>
 
