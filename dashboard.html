@@ -66,14 +66,16 @@
         }
 
         body.light-theme .form-input {
-            background: #f8fafc;
-            border-color: rgba(15, 23, 42, 0.12);
-            color: #0f172a;
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
         }
 
         body.light-theme .form-input:focus {
-            border-color: var(--color-primary);
-            background: #ffffff;
+            border-color: #4f46e5 !important;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
         }
 
         body.light-theme .user-name {
@@ -2385,25 +2387,25 @@
                         <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-signature" style="color: var(--color-primary-light); font-size: 11px;"></i> 사용자 성함
                         </label>
-                        <input type="text" id="quick-profile-name" class="form-input" placeholder="이름을 적어주세요" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;" required>
+                        <input type="text" id="quick-profile-name" class="form-input" placeholder="이름을 적어주세요" style="height: 46px; font-size: 13.5px;" required>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
                         <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-cake-candles" style="color: var(--color-primary-light); font-size: 11px;"></i> 나이 (만 연령)
                         </label>
-                        <input type="number" id="quick-profile-age" class="form-input" placeholder="만 나이를 적어주세요" min="1" max="120" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;" required>
+                        <input type="number" id="quick-profile-age" class="form-input" placeholder="만 나이를 적어주세요" min="1" max="120" style="height: 46px; font-size: 13.5px;" required>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
                         <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-notes-medical" style="color: var(--color-primary-light); font-size: 11px;"></i> 보유 기저질환 목록
                         </label>
-                        <input type="text" id="quick-profile-illness" class="form-input" placeholder="예: 고혈압, 당뇨 (쉼표 구분)" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;">
+                        <input type="text" id="quick-profile-illness" class="form-input" placeholder="예: 고혈압, 당뇨 (쉼표 구분)" style="height: 46px; font-size: 13.5px;">
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 6px;">
                         <label style="font-size: 13px; color: var(--text-main); font-weight: 800; display: flex; align-items: center; gap: 4px;">
                             <i class="fa-solid fa-hand-holding-medical" style="color: var(--color-primary-light); font-size: 11px;"></i> 알레르기 유발 인자
                         </label>
-                        <input type="text" id="quick-profile-allergies" class="form-input" placeholder="예: 아스피린, 땅콩 등" style="background: rgba(0,0,0,0.15); border: 1px solid var(--panel-border); height: 46px; font-size: 13.5px;">
+                        <input type="text" id="quick-profile-allergies" class="form-input" placeholder="예: 아스피린, 땅콩 등" style="height: 46px; font-size: 13.5px;">
                     </div>
                 </div>
             </div>
