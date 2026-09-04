@@ -38,88 +38,88 @@
            [💡 신규 고도화: 낮 테마 (라이트 모드) 전용 토큰 변수들]
            ========================================================================== */
         body.light-theme {
-            --bg-dark: #f8fafc;          /* 맑고 고급스러운 명도 대비 회색 배경 */
-            --bg-card: #ffffff;          /* 순백색 카드 전용 배경 */
-            --panel-border: rgba(15, 23, 42, 0.12); /* 얇지만 명확하게 흐릿함을 제거한 테두리선 */
+            --bg-dark: #faf9f2;          /* 눈부심을 완벽히 흡수하는 따뜻하고 아늑한 아이보리 크림 배경 */
+            --bg-card: #ffffff;          /* 시인성 극대화를 위한 순백색 입체 카드 배경 */
+            --panel-border: rgba(45, 106, 79, 0.15); /* 따뜻한 초록빛이 감도는 선명한 연한 테두리선 */
             
-            --color-primary: #312e81;    /* 가독성 100% 보장을 위한 극도로 진하고 품격있는 딥 네이비 */
-            --color-secondary: #4c1d95;  /* 고대비 딥 바이올렛 */
-            --color-accent: #1e3a8a;     /* 선명하고 정갈한 로얄 블루 */
+            --color-primary: #1b4d3e;    /* 약초의 생명력과 기품을 담은 차분하고 진한 딥 포레스트 그린 */
+            --color-secondary: #2d6a4f;  /* 싱그러운 숲의 건강함을 형상화한 세이지 그린 */
+            --color-accent: #c97a7e;     /* 처방 경고 시 부드럽고 명확하게 경고하는 인디안 로즈 */
             
-            --text-main: #0f172a;        /* 잉크 차콜 블랙 (대비율 21:1 보장의 눈부심 없는 가장 또렷한 글씨) */
-            --text-muted: #475569;       /* 연하지 않은 짙은 슬레이트 보조 글자색 */
+            --text-main: #141f19;        /* 가독성 100%를 보장하는 극도로 또렷한 다크 스프루스 차콜 */
+            --text-muted: #4a5d56;       /* 연하지 않고 또렷하게 읽히는 올리브 카키 슬레이트 보조 글자색 */
             
             background-color: var(--bg-dark);
             color: var(--text-main);
-            font-weight: 600;            /* 전체 글자 두께 상향 */
+            font-weight: 700;            /* 맑은 시인성을 위해 기본 글씨 두께 강화 */
         }
 
         body.light-theme .sidebar {
             background: #ffffff;
-            border-right: 1px solid rgba(15, 23, 42, 0.12) !important;
-            box-shadow: 2px 0 12px rgba(15, 23, 42, 0.03) !important;
+            border-right: 1px solid rgba(45, 106, 79, 0.15) !important;
+            box-shadow: 2px 0 16px rgba(45, 106, 79, 0.04) !important;
         }
 
         body.light-theme .card {
             background: #ffffff !important;
-            border: 1px solid rgba(15, 23, 42, 0.12) !important;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05) !important;
+            border: 1px solid rgba(45, 106, 79, 0.15) !important;
+            box-shadow: 0 6px 20px rgba(45, 106, 79, 0.04) !important;
         }
 
         body.light-theme .form-input {
             background: #ffffff !important;
-            border: 1px solid #cbd5e1 !important;
-            color: #0f172a !important;
+            border: 1px solid #a3b899 !important;
+            color: #141f19 !important;
             font-weight: 700 !important;
         }
 
         body.light-theme .form-input:focus {
-            border-color: #4f46e5 !important;
+            border-color: #2d6a4f !important;
             background: #ffffff !important;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
+            box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.15) !important;
         }
 
         body.light-theme .user-name {
-            color: #0f172a;
+            color: #1b4d3e;
         }
 
         body.light-theme .logo-text {
-            background: linear-gradient(135deg, #0f172a 30%, var(--color-primary) 100%);
+            background: linear-gradient(135deg, #1b4d3e 30%, #2d6a4f 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         body.light-theme .pillip-chat-board {
             background: #ffffff;
-            border-color: rgba(15, 23, 42, 0.1);
-            box-shadow: 0 10px 40px rgba(15, 23, 42, 0.1);
+            border-color: rgba(45, 106, 79, 0.12);
+            box-shadow: 0 12px 48px rgba(45, 106, 79, 0.08);
         }
 
         body.light-theme .pillip-main-name {
-            color: #0f172a;
+            color: #1b4d3e;
         }
 
         body.light-theme .pillip-sub-name {
-            color: #64748b;
+            color: #4a5d56;
         }
 
         body.light-theme .panel-title {
-            color: #0f172a;
+            color: #1b4d3e;
         }
 
         body.light-theme .panel-subtitle {
-            color: #64748b;
+            color: #4a5d56;
         }
 
         /* [💡 낮 테마 가독성 극대화 오버라이드 세트] */
         body.light-theme .timeline-card {
             background: #ffffff !important;
-            border-color: rgba(15, 23, 42, 0.15) !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
+            border-color: rgba(45, 106, 79, 0.15) !important;
+            box-shadow: 0 6px 24px rgba(45, 106, 79, 0.04) !important;
         }
         body.light-theme .timeline-card:hover {
-            border-color: rgba(99, 102, 241, 0.4) !important;
-            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15) !important;
+            border-color: rgba(45, 106, 79, 0.4) !important;
+            box-shadow: 0 8px 30px rgba(45, 106, 79, 0.12) !important;
         }
         body.light-theme .timeline-med-name {
             color: #000000 !important;
