@@ -230,7 +230,7 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
         const phoneRegex = /010\s*-\s*\d{3,4}\s*-\s*\d{4}/g;
         text = text.replace(rrnRegex, "XXXXXX-XXXXXXX").replace(phoneRegex, "010-XXXX-XXXX");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
         const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
@@ -307,7 +307,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
             return res.status(400).json({ error: "업로드된 건강검진표 이미지 파일이 없습니다." });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
         // 이미지 버퍼를 Gemini 인라인 데이터 파트로 가공
         const imagePart = {
@@ -503,7 +503,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
         // 📸 1. 이미지 사진(약봉투/처방전) 업로드 시나리오 (다중 약물 스캔 기능 탑재)
         if (req.file) {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
             const imagePart = {
                 inlineData: {
                     data: req.file.buffer.toString("base64"),
@@ -566,7 +566,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
         }
 
         // 🩺 3. 추출된 모든 약물들에 대해 "순차적으로 식약처 RAG 정밀 분석" 후 일괄 복약 등록 개시!
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         const newlyRegisteredRecords = [];
 
         for (const med of targetMedications) {
@@ -1028,7 +1028,7 @@ app.post("/api/chats/message", async (req, res) => {
 `;
 
         // 5. Gemini 3.6 Flash 엔진 가동하여 메디컬 가이드 조율
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         const result = await model.generateContent(contextPrompt);
         const reply = result.response.text().trim();
 
@@ -1073,7 +1073,7 @@ app.post("/api/pillip/chat", async (req, res) => {
         const userId = medicationContext?.userId || "user_default";
         const sessionId = medicationContext?.id || "general";
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
         const result = await model.generateContent(message);
         const reply = result.response.text().trim();
         
