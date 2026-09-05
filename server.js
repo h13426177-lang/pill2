@@ -232,7 +232,7 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
@@ -323,7 +323,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서 원본 이미지를 눈으로 읽고 분석하여 데이터를 정형화하는 'Pillip' 메디컬 비전 AI 어시스턴트입니다.
@@ -543,7 +543,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 `;
 
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
                 if (visionText.includes("```")) {
@@ -625,7 +625,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
             let parsedAnalysis = {};
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
                 const response = await model.generateContent(analysisPrompt);
                 let responseText = response.response.text().trim();
                 if (responseText.includes("```")) {
@@ -1045,7 +1045,7 @@ app.post("/api/chats/message", async (req, res) => {
         // 5. Gemini 2.5-Flash 엔진 가동하여 메디컬 가이드 조율 (안전 최우선 Try-Catch 장전)
         let reply = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
             const result = await model.generateContent(contextPrompt);
             reply = result.response.text().trim();
         } catch (apiErr) {
@@ -1106,7 +1106,7 @@ app.post("/api/pillip/chat", async (req, res) => {
 
         let reply = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
             const result = await model.generateContent(message);
             reply = result.response.text().trim();
         } catch (apiErr) {
