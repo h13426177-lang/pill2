@@ -3795,34 +3795,6 @@
                                                         </div>
                                                     </div>
 
-                                                    <!-- 💊 Realtime Pharmacokinetics Panel -->
-                                                    <div class="pharmacology-panel" style="background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); padding: 14px; border-radius: 12px; margin-top: 12px; font-size: 13px;">
-                                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                                            <span style="font-weight: 700; color: var(--color-primary); display: flex; align-items: center; gap: 4px;">
-                                                                <i class="fa-solid fa-droplet"></i> 체내 약물 성분 잔존율 시뮬레이션
-                                                            </span>
-                                                            <span style="font-weight: 800; color: var(--color-primary-light);">${residualPercent.toFixed(1)}%</span>
-                                                        </div>
-                                                        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.02);">
-                                                            <div style="width: ${residualPercent}%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light)); border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                                                        </div>
-                                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                                                            <div>
-                                                                <span style="font-weight: 600; color: var(--text-main);">약효 반감기:</span> ${halfLife}시간
-                                                            </div>
-                                                            <div>
-                                                                <span style="font-weight: 600; color: var(--text-main);">완전 체외배출:</span> 약 ${excretionTime}시간
-                                                            </div>
-                                                        </div>
-                                                        <div style="border-top: 1px dashed var(--panel-border); margin-top: 8px; padding-top: 8px; font-size: 11px; display: flex; flex-direction: column; gap: 2px;">
-                                                            <div style="display: flex; justify-content: space-between;">
-                                                                <span style="font-weight: 600; color: var(--text-main);">기존 복용 약물과의 약효 구조 유사도:</span>
-                                                                <span style="font-weight: 800; color: ${simScore > 50 ? "#f87171" : "#34d399"};">${simScore}%</span>
-                                                            </div>
-                                                            <div style="color: var(--text-muted); line-height: 1.3;">${simReason}</div>
-                                                        </div>
-                                                    </div>
-
                                                     <p class="timeline-desc" style="margin-top: 12px; color: var(--text-main); font-weight: 500;">
                                                         ${statusIconHTML} ${med.reason}
                                                     </p>
