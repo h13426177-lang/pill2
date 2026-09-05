@@ -3753,42 +3753,12 @@
                     const simScore = med.sim_score || 0;
                     const simReason = med.sim_reason || "안전한 단독 복용 상태입니다.";
 
-                    // 식약처 연동 의약 정보 수집 사전 마크업 구성
-                    let kfdaDetailHTML = "";
-                    if (med.kfda_info) {
-                        kfdaDetailHTML = `
-                            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700; width: 120px;">공식 효능효과</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.effect || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">용법용량</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.usage || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">주의사항 (금기)</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); color: var(--status-danger); font-weight: 600;">${med.kfda_info.caution || "정보 없음"}</td>
-                                </tr>
-                            </table>
-                            <div class="accordion-btn-group">
-                                <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
-                                    <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 진단받기 💬
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        kfdaDetailHTML = `
-                            <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px;">
-                                <i class="fa-solid fa-circle-exclamation mr-1"></i> 식약처 공공 검색 사전에서 매칭되는 의약품 정보가 수집되지 않았습니다. <br>대신 Pillip 비서에게 물어보시면 상세 복약 조언을 Gemini가 직관적으로 제공해 드립니다.
-                                <div style="margin-top:10px;">
-                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
-                                        <i class="fa-solid fa-comment-medical"></i> Pillip 약사 AI 정밀 상담 개시 💬
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
+                    // 💡 [실시간 수집 지연 로딩]: 아코디언이 처음 오픈될 때 백엔드 프록시를 통해 실시간으로 e약은요 공공데이터를 긁어옵니다!
+                    let kfdaDetailHTML = `
+                        <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px; text-align: center;">
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> 식약처 공공 데이터 수집 준비 완료 (클릭 시 실시간 동기화)
+                        </div>
+                    `;
 
                     timelineHTML += `
                         <div class="timeline-item ${med.risk}">
@@ -3878,10 +3848,11 @@
             }
         }
 
-        // 복약 정보 아코디언 핸들러
-        function toggleAccordion(btn, idx) {
+        // 복약 정보 아코디언 핸들러 (식약처 e약은요 실시간 프록시 연동)
+        async function toggleAccordion(btn, idx) {
             const content = document.getElementById(`acc-content-${idx}`);
             const isOpened = content.classList.contains("open");
+            const med = globalMedications[idx];
             
             // 모든 다른 아코디언 닫기
             const allContents = document.querySelectorAll(".accordion-content");
@@ -3901,9 +3872,110 @@
 
             if (!isOpened) {
                 content.classList.add("open");
-                content.style.maxHeight = content.scrollHeight + 100 + "px"; // padding 마진 공간 보정
+                
+                // 1. 만약 아직 실시간 조회 데이터를 받아오지 않은 상태라면 프록시 API 호출 트리거
+                if (!content.getAttribute("data-loaded")) {
+                    content.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px; text-align: center;">
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> 공공데이터포털 식약처 e약은요 실시간 데이터 수집 중...
+                        </div>
+                    `;
+                    content.style.maxHeight = content.scrollHeight + 100 + "px";
+
+                    try {
+                        const response = await fetch(`${API_BASE}/api/drug-info?medicationName=${encodeURIComponent(med.name)}`);
+                        if (!response.ok) throw new Error("API 호출 오류");
+                        
+                        const kfdaData = await response.json();
+                        const items = kfdaData.body?.items;
+                        const totalCount = kfdaData.body?.totalCount || 0;
+
+                        if (kfdaData.success !== false && items && items.length > 0 && totalCount > 0) {
+                            const item = items[0];
+                            
+                            // 줄바꿈 정제 헬퍼 함수
+                            const cleanText = (txt) => {
+                                if (!txt) return "정보 없음";
+                                return txt.replace(/<[^>]*>/g, "").replace(/\n/g, "<br>");
+                            };
+
+                            content.innerHTML = `
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; width: 120px; background: rgba(255,255,255,0.02);">공식 효능효과</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); line-height: 1.4;">${cleanText(item.efcyQesitm)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; background: rgba(255,255,255,0.02);">용법용량</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); line-height: 1.4;">${cleanText(item.useMethodQesitm)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; background: rgba(255,255,255,0.02);">주의사항 (금기)</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); color: var(--status-danger); font-weight: 600; line-height: 1.4;">${cleanText(item.atpnQesitm)}</td>
+                                    </tr>
+                                </table>
+                                <div class="accordion-btn-group" style="margin-top: 12px;">
+                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                        <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 정밀상담 개시 💬
+                                    </button>
+                                </div>
+                            `;
+                            content.setAttribute("data-loaded", "true");
+                        } else {
+                            // 결과가 없을 때의 기존 가이드라인 매칭
+                            throw new Error("결과 없음");
+                        }
+                    } catch (e) {
+                        console.warn("식약처 실시간 데이터 미검출. 폴백 RAG 데이터 가동합니다.", e);
+                        
+                        // 폴백: DB 자체에 수집되었던 RAG 데이터 혹은 AI 기본 가이드라인 제공
+                        if (med.kfdaInfo && (med.kfdaInfo.efcyQesitm || med.kfdaInfo.efcy)) {
+                            const info = med.kfdaInfo;
+                            content.innerHTML = `
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; width: 120px; background: rgba(255,255,255,0.02);">공식 효능효과</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); line-height: 1.4;">${info.efcyQesitm || info.efcy || "정보 없음"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; background: rgba(255,255,255,0.02);">용법용량</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); line-height: 1.4;">${info.useMethodQesitm || info.useMethod || "정보 없음"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); font-weight: 700; background: rgba(255,255,255,0.02);">주의사항 (금기)</td>
+                                        <td style="padding: 10px; border: 1px solid var(--panel-border); color: var(--status-danger); font-weight: 600; line-height: 1.4;">${info.atpnQesitm || info.atpn || info.warn || "정보 없음"}</td>
+                                    </tr>
+                                </table>
+                                <div class="accordion-btn-group" style="margin-top: 12px;">
+                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                        <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 정밀상담 개시 💬
+                                    </button>
+                                </div>
+                            `;
+                            content.setAttribute("data-loaded", "true");
+                        } else {
+                            // 완전히 없을 때: Pillip 비서 상담 폴백 메시지 출력
+                            content.innerHTML = `
+                                <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px;">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> 식약처 공공 검색 사전에서 매칭되는 의약품 정보가 수집되지 않았습니다. <br>대신 Pillip 비서에게 물어보시면 상세 복약 조언을 Gemini가 직관적으로 제공해 드립니다.
+                                    <div style="margin-top:10px;">
+                                        <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                            <i class="fa-solid fa-comment-medical"></i> Pillip 약사 AI 정밀 상담 개시 💬
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
+                // 아코디언 높이 재조정 및 가시화
+                setTimeout(() => {
+                    content.style.maxHeight = content.scrollHeight + 100 + "px";
+                }, 50);
+
                 btn.querySelector(".fa-chevron-down")?.style.setProperty("transform", "rotate(180deg)");
-                showToast(`'${globalMedications[idx].name}' 식약처 상세 수집 사전이 활성화되었습니다.`, "success");
+                showToast(`'${med.name}' 식약처 상세 수집 사전이 활성화되었습니다.`, "success");
             } else {
                 content.classList.remove("open");
                 content.style.maxHeight = null;

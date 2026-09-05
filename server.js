@@ -874,6 +874,48 @@ app.post("/api/calendar/toggle/:userId", (req, res) => {
 
 
 // ==========================================
+// [식약처 공공데이터 e약은요 API 프록시 라우터]
+// ==========================================
+app.get("/api/drug-info", async (req, res) => {
+    try {
+        const { medicationName } = req.query;
+        if (!medicationName) {
+            return res.status(400).json({ error: "medicationName 파라미터가 누락되었습니다." });
+        }
+
+        // 1. [검색어 정제 로직]: 괄호, 영문, 함량 정보, 특수문자 등을 정교하게 제거하여 순수 한글명 추출
+        const cleanName = medicationName
+            .replace(/\([^)]*\)/g, "")              // 괄호 ( ) 와 안의 내용 삭제
+            .replace(/\[[^\]]*\]/g, "")              // 대괄호 [ ] 와 안의 내용 삭제
+            .replace(/[a-zA-Z]/g, "")                // 영문 삭제
+            .replace(/\d+(mg|g|ml|l|정|포)/gi, "")    // 함량 및 제형 단위 삭제 (예: 5mg, 500mg 등)
+            .replace(/[^가-힣0-9\s]/g, "")            // 특수문자 제거
+            .replace(/\s+/g, " ")                    // 연속된 공백 단일화
+            .trim();
+
+        console.log(`🔍 [식약처 프록시] 원본명: "${medicationName}" ➡️ 정제명: "${cleanName}"`);
+
+        const apiKey = process.env.KFDA_API_KEY;
+        if (!apiKey) {
+            console.error("❌ 식약처 KFDA_API_KEY 환경 변수가 누락되었습니다.");
+            return res.status(500).json({ error: "서버에 KFDA_API_KEY가 구성되지 않았습니다." });
+        }
+
+        const url = `http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugInfoService`;
+        const queryParams = `?serviceKey=${encodeURIComponent(apiKey)}&itemName=${encodeURIComponent(cleanName)}&type=json`;
+
+        const response = await fetch(url + queryParams);
+        const data = await response.json();
+
+        res.json(data);
+    } catch (err) {
+        console.error("식약처 API 호출 에러:", err);
+        res.status(500).json({ error: "식약처 API 호출 중 장애가 일어났습니다." });
+    }
+});
+
+
+// ==========================================
 // [4-2. 💬 AI 약사 비서 'Pillip(필립)' 분기 멀티 채팅방 API]
 // ==========================================
 
