@@ -3547,10 +3547,62 @@
         let globalMedications = []; 
 
         // 🛡️ [우주 초강력 100% 네이티브 직다이렉트 클릭 감지기 - 전역 상시 대피소]
-        window.openAlarmModalById = function(medId, btnElement) {
+        window.openAlarmModalById = async function(medId, btnElement) {
             const med = globalMedications.find(m => String(m.id) === String(medId));
-            if (med) {
-                alert(`'${med.name}'의 복약 알림이 완벽히 설정되었습니다. ⏰`);
+            if (!med) {
+                showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                return;
+            }
+
+            // 버튼에서 데이터 속성 안전하게 추출 (기본 폴백 3일 지정)
+            const medName = btnElement ? btnElement.getAttribute("data-med-name") || med.name : med.name;
+            const duration = parseInt(btnElement ? btnElement.getAttribute("data-duration") || med.prescriptionDays : med.prescriptionDays) || 3;
+
+            // 로딩 상태 피드백 임시 시각화
+            if (btnElement) {
+                btnElement.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>일정 등록중...</span>`;
+                btnElement.style.pointerEvents = 'none';
+            }
+
+            try {
+                // 오늘 날짜부터 시작하여 duration(복용일수) 동안 루프 돌며 알람 일정 등록 API 호출
+                const today = new Date();
+                const promises = [];
+
+                for (let i = 0; i < duration; i++) {
+                    const nextDate = new Date(today);
+                    nextDate.setDate(today.getDate() + i);
+                    
+                    const year = nextDate.getFullYear();
+                    const month = String(nextDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(nextDate.getDate()).padStart(2, '0');
+                    const dateString = `${year}-${month}-${day}`;
+
+                    // 하루 3회(아침 09:00, 점심 13:00, 저녁 19:00) 복약 알람 일정을 데이터베이스에 든든하게 주입!
+                    const times = ["09:00", "13:00", "19:00"];
+                    times.forEach(time => {
+                        promises.push(
+                            fetch(`${API_BASE}/api/alarms/add/${currentUser.id}`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    medicationName: medName,
+                                    dateTime: `${dateString}T${time}`
+                                })
+                            })
+                        );
+                    });
+                }
+
+                // 모든 알림 API 비동기 완료 동기화
+                await Promise.all(promises);
+
+                // 달력 데이터 및 알림 리스트 동기화 호출
+                if (typeof fetchAlarmsData === "function") await fetchAlarmsData();
+                if (typeof fetchCalendarData === "function") await fetchCalendarData();
+
+                alert(`'${medName}'의 ${duration}일간 복약 스케줄(하루 3회)이 달력과 알림에 완벽하게 연동되었습니다! ⏰📅`);
+
                 if (btnElement) {
                     btnElement.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>알림 완료</span>`;
                     btnElement.style.background = 'rgba(16, 185, 129, 0.2)';
@@ -3558,9 +3610,18 @@
                     btnElement.style.color = '#10b981';
                     btnElement.setAttribute("disabled", "true");
                     btnElement.style.cursor = 'default';
+                    btnElement.style.pointerEvents = 'none';
                 }
-            } else {
-                showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+
+            } catch (err) {
+                console.error("복약 스케줄 달력 연동 오류:", err);
+                showToast("일부 복약 알림 일정을 달력에 등록하는 중 오류가 발생했습니다.", "error");
+                
+                // 에러 복구 폴백
+                if (btnElement) {
+                    btnElement.innerHTML = `<i class="fa-solid fa-bell"></i> <span>알림 신청</span>`;
+                    btnElement.style.pointerEvents = 'auto';
+                }
             }
         };
 
@@ -3739,7 +3800,7 @@
                                         <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
                                         <div class="timeline-action-buttons" style="display: flex; gap: 8px; position: relative; z-index: 20; pointer-events: auto;">
                                             <!-- ⏰ 복약 알림 신청 버튼 -->
-                                            <button type="button" class="btn-history-alarm" data-med-id="${med.id}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
+                                            <button type="button" class="btn-history-alarm" data-med-id="${med.id}" data-med-name="${med.name}" data-duration="${pDays}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
                                                 <i class="fa-solid fa-bell"></i> <span>알림 신청</span>
                                             </button>
                                             <!-- 🗑️ 복약 이력 삭제 버튼 -->

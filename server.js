@@ -684,6 +684,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
                 prescriptionDate: finalPDate,
                 prescriptionDays: parsedAnalysis.pharmacology?.prescriptionDays || med.days,
+                duration_days: parsedAnalysis.pharmacology?.prescriptionDays || med.days,
                 prescriptionFrequency: med.frequency || 3, // 💡 [자동 알람 설정용 일일 복용 횟수 저장]
                 pharmacology: {
                     halfLifeHours: parsedAnalysis.pharmacology?.halfLifeHours || 4.0,
