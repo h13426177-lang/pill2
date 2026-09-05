@@ -1009,6 +1009,29 @@
             transform: scale(1.15);
         }
 
+        /* 👵👴 [어르신용 이력 삭제 버튼 전용 소프트-레드 스타일 시트] */
+        .btn-history-delete {
+            background: rgba(248, 113, 113, 0.08) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(248, 113, 113, 0.2) !important;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .btn-history-delete:hover {
+            background: #ef4444 !important;
+            color: #fff !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+            transform: translateY(-1px);
+        }
+
         .divider-or {
             display: flex;
             align-items: center;
@@ -3125,65 +3148,96 @@
 
         // 페이지 기동 및 세션 무결성 검증
         window.addEventListener("DOMContentLoaded", () => {
+            console.log("🚀 SafeDrug AI 자바스크립트 엔진 정상 기동 완료! 최신 어르신 안심 롤백 핫픽스가 탑재되었습니다.");
             const rawUser = localStorage.getItem("currentUser");
             if (!rawUser) {
                 location.href = "login.html";
                 return;
             }
 
-            currentUser = JSON.parse(rawUser);
-            
-            // 모바일 로그아웃 뷰 가시성 조절
-            if(window.innerWidth <= 768) {
-                document.getElementById("mobile-logout-btn").style.display = "flex";
+            try {
+                currentUser = JSON.parse(rawUser);
+            } catch (e) {
+                console.error("유저 세션 파싱 오류:", e);
+                location.href = "login.html";
+                return;
             }
+            
+            // 모바일 로그아웃 뷰 가시성 조절 (오류 방어 가드 장착)
+            try {
+                if(window.innerWidth <= 768) {
+                    const mobBtn = document.getElementById("mobile-logout-btn");
+                    if (mobBtn) mobBtn.style.display = "flex";
+                }
+            } catch (e) { console.warn("모바일 버튼 가드 우회:", e.message); }
 
             // UI 바인딩 및 프로필 초기화
             updateUserHeader();
             loadProfileData();
 
             // 백그라운드 데이터 수신 초기 로딩 개시
-            fetchUserMedicationHistory();
-            fetchCalendarData();
-            fetchAlarmsData(); // 알람 스케줄 로드
+            try { fetchUserMedicationHistory(); } catch (e) { console.error("복용 이력 로딩 실패:", e); }
+            try { fetchCalendarData(); } catch (e) { console.error("달력 로딩 실패:", e); }
+            try { fetchAlarmsData(); } catch (e) { console.error("알람 로딩 실패:", e); }
 
             // 브라우저 OS 알림 예약 권한 요청
-            requestBrowserNotificationPermission();
+            try { requestBrowserNotificationPermission(); } catch (e) { console.warn("알림 권한 가드 우회:", e.message); }
 
             // 드래그 앤 드롭 파일 첨부 바인딩
-            setupDragAndDrop();
+            try { setupDragAndDrop(); } catch (e) { console.warn("드롭존 바인딩 가드 우회:", e.message); }
 
             // 필립 비서 자바스크립트 리스너 연결
-            setupPillipListeners();
+            try { setupPillipListeners(); } catch (e) { console.warn("필립 비서 바인딩 가드 우회:", e.message); }
 
             // 💡 부분 일치 식약처 후보군 수동 조작 바인딩
-            setupKfdaCandidateListeners();
+            try { setupKfdaCandidateListeners(); } catch (e) { console.warn("식약처 후보군 바인딩 가드 우회:", e.message); }
 
-            // PDF 버튼 동적 연결
-            document.getElementById("btn-pdf-download").addEventListener("click", downloadPDFReport);
+            // PDF 버튼 동적 연결 (요소 유실 완벽 방지)
+            try {
+                const pdfBtn = document.getElementById("btn-pdf-download");
+                if (pdfBtn) {
+                    pdfBtn.addEventListener("click", downloadPDFReport);
+                }
+            } catch (e) { console.warn("PDF 버튼 바인딩 가드 우회:", e.message); }
 
             // 15초 주기 알람 타임체크 스케줄러 개시
-            setInterval(checkAlarmsScheduler, 15000);
+            try { setInterval(checkAlarmsScheduler, 15000); } catch (e) { console.warn("알람 스케줄러 가드 우회:", e.message); }
 
-            // 초기 프로필 로드 바인딩
-            if (currentUser) {
-                document.getElementById("profile-age").value = currentUser.age || "";
-                document.getElementById("profile-illness").value = currentUser.illness || "";
-                document.getElementById("profile-allergies").value = currentUser.allergies || "";
-            }
+            // 초기 프로필 로드 바인딩 (요소 유실 완벽 방지)
+            try {
+                if (currentUser) {
+                    const ageInput = document.getElementById("profile-age");
+                    if (ageInput) ageInput.value = currentUser.age || "";
+                    const illInput = document.getElementById("profile-illness");
+                    if (illInput) illInput.value = currentUser.illness || "";
+                    const allInput = document.getElementById("profile-allergies");
+                    if (allInput) allInput.value = currentUser.allergies || "";
+                }
+            } catch (e) { console.warn("프로필 인풋 바인딩 가드 우회:", e.message); }
             
             // Initialize prescription date input default value to today
-            const rxDateInput = document.getElementById("med-prescription-date");
-            if (rxDateInput) {
-                rxDateInput.value = new Date().toISOString().substring(0, 10);
-            }
+            try {
+                const rxDateInput = document.getElementById("med-prescription-date");
+                if (rxDateInput) {
+                    rxDateInput.value = new Date().toISOString().substring(0, 10);
+                }
+            } catch (e) { console.warn("처방전 날짜 바인딩 가드 우회:", e.message); }
         });
 
-        // 1. 유저 헤더 동적 세팅
+        // 1. 유저 헤더 동적 세팅 (오류 방어 가드 강화)
         function updateUserHeader() {
-            document.getElementById("user-display-name").innerText = `${currentUser.name} 님`;
-            document.getElementById("user-display-email").innerText = `@${currentUser.username}`;
-            document.getElementById("user-avatar-initial").innerText = currentUser.name.trim().substring(0, 1);
+            try {
+                const nameEl = document.getElementById("user-display-name");
+                if (nameEl) nameEl.innerText = `${currentUser.name} 님`;
+                const emailEl = document.getElementById("user-display-email");
+                if (emailEl) emailEl.innerText = `@${currentUser.username}`;
+                const avatarEl = document.getElementById("user-avatar-initial");
+                if (avatarEl && currentUser.name) {
+                    avatarEl.innerText = currentUser.name.trim().substring(0, 1);
+                }
+            } catch (e) {
+                console.warn("유저 헤더 로딩 가드 우회:", e.message);
+            }
         }
 
         // 2. 로그아웃 제어 핸들러
@@ -3503,9 +3557,10 @@
         };
 
         window.openSafeDeleteVerifyModalById = function(medId) {
+            console.log("📞 [이력삭제 클릭 감지] 수신 약물 ID:", medId);
             const med = globalMedications.find(m => String(m.id) === String(medId));
             if (med) {
-                openSafeDeleteVerifyModal(med.id, med.name);
+                window.openSafeDeleteVerifyModal(med.id, med.name);
             } else {
                 showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
             }
@@ -3609,8 +3664,18 @@
                             <div class="timeline-card" style="overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
                                 
                                 <div class="timeline-card-content" style="position: relative; z-index: 10;">
-                                    <div class="timeline-header" style="margin-bottom: 8px;">
+                                    <div class="timeline-header" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                                         <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
+                                        <div class="timeline-action-buttons" style="display: flex; gap: 8px;">
+                                            <!-- ⏰ 복약 알림 신청 버튼 -->
+                                            <button type="button" class="btn-history-alarm" onclick="openAlarmModalById('${med.id}')" style="background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
+                                                <i class="fa-solid fa-bell"></i> <span>알림 신청</span>
+                                            </button>
+                                            <!-- 🗑️ 복약 이력 삭제 버튼 -->
+                                            <button type="button" class="btn-history-delete" onclick="openSafeDeleteVerifyModalById('${med.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'">
+                                                <i class="fa-solid fa-trash-can"></i> <span>이력 삭제</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom: 12px;">
                                         <span style="font-size: 12px; color: var(--text-muted);">처방 분석일: ${formattedDate}</span>
@@ -5169,7 +5234,8 @@
         // ==========================================
         // [💡 신규 추가: 약물 복용 이력 안전 이중 검증 삭제 모달 비즈니스 로직]
         // ==========================================
-        function openSafeDeleteVerifyModal(medId, medName) {
+        window.openSafeDeleteVerifyModal = function(medId, medName) {
+            console.log("🔒 [안심 삭제 모달 작동 시작] 약물ID:", medId, "이름:", medName);
             document.getElementById("delete-med-id").value = medId;
             document.getElementById("delete-med-fullname").value = medName;
             
@@ -5184,16 +5250,24 @@
             if (targetTextSpan) {
                 targetTextSpan.innerText = medName;
             } else {
-                document.getElementById("delete-med-target-display").innerText = medName;
+                const legacyDisplay = document.getElementById("delete-med-target-display");
+                if (legacyDisplay) legacyDisplay.innerText = medName;
             }
             
             // 모달 열기
-            document.getElementById("delete-verify-modal-overlay").classList.add("active");
-        }
+            const overlay = document.getElementById("delete-verify-modal-overlay");
+            if (overlay) {
+                overlay.classList.add("active");
+                console.log("✅ [안심 삭제 모달 화면 활성화 성공]");
+            } else {
+                console.error("⚠️ 오류: delete-verify-modal-overlay 요소를 화면에서 찾을 수 없습니다.");
+            }
+        };
 
-        function closeSafeDeleteVerifyModal() {
-            document.getElementById("delete-verify-modal-overlay").classList.remove("active");
-        }
+        window.closeSafeDeleteVerifyModal = function() {
+            const overlay = document.getElementById("delete-verify-modal-overlay");
+            if (overlay) overlay.classList.remove("active");
+        };
 
         /**
          * 👵👴 [어르신 안심 0타이핑 자동완성 도우미]: 약 이름을 콕 터치하면 사르륵 대입해 줍니다.
