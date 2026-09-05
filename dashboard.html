@@ -3582,7 +3582,7 @@
                     if (response.ok && resData.success) {
                         showToast(`'${med.name}' 기록이 성공적으로 삭제되었습니다.`, "success");
                         // 🚀 [초고속 DOM 동적 프루닝]: 화면에서 해당 타임라인 카드를 찾아서 자연스럽게 삭제
-                        const deleteBtn = document.querySelector(`button[onclick*="openSafeDeleteVerifyModalById('${medId}')"]`);
+                        const deleteBtn = document.querySelector(`.btn-history-delete[data-med-id="${medId}"]`);
                         if (deleteBtn) {
                             const timelineItem = deleteBtn.closest('.timeline-item');
                             if (timelineItem) {
@@ -3608,6 +3608,34 @@
                 }
             }
         };
+
+        // 🔗 [이벤트 위임 패턴 (Event Delegation) 탑재]: 정적 부모 컨테이너에 단 하나의 클릭 이벤트만 바인딩하여 영구 작동 보장
+        document.addEventListener("DOMContentLoaded", () => {
+            const timelineContainer = document.getElementById("medication-timeline");
+            if (timelineContainer) {
+                timelineContainer.addEventListener("click", (e) => {
+                    // 1. 알림 신청 버튼 클릭 판별 (아이콘이나 텍스트를 눌러도 최상위 버튼을 낚아챔)
+                    const alarmBtn = e.target.closest(".btn-history-alarm");
+                    if (alarmBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const medId = alarmBtn.getAttribute("data-med-id");
+                        openAlarmModalById(medId, alarmBtn);
+                        return;
+                    }
+
+                    // 2. 이력 삭제 버튼 클릭 판별
+                    const deleteBtn = e.target.closest(".btn-history-delete");
+                    if (deleteBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const medId = deleteBtn.getAttribute("data-med-id");
+                        openSafeDeleteVerifyModalById(medId);
+                        return;
+                    }
+                });
+            }
+        });
 
         async function fetchUserMedicationHistory() {
             try {
@@ -3666,7 +3694,7 @@
 
                     // 식약처 연동 의약 정보 수집 사전 마크업 구성
                     let kfdaDetailHTML = "";
-                    if (med.kfdaInfo) {
+                    if (med.kfda_info) {
                         kfdaDetailHTML = `
                             <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
                                 <tr>
@@ -3709,13 +3737,13 @@
                                 <div class="timeline-card-content" style="position: relative; z-index: 10;">
                                     <div class="timeline-header" style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                                         <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
-                                        <div class="timeline-action-buttons" style="display: flex; gap: 8px;">
+                                        <div class="timeline-action-buttons" style="display: flex; gap: 8px; position: relative; z-index: 20; pointer-events: auto;">
                                             <!-- ⏰ 복약 알림 신청 버튼 -->
-                                            <button type="button" class="btn-history-alarm" onclick="openAlarmModalById('${med.id}', this)" style="background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
+                                            <button type="button" class="btn-history-alarm" data-med-id="${med.id}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
                                                 <i class="fa-solid fa-bell"></i> <span>알림 신청</span>
                                             </button>
                                             <!-- 🗑️ 복약 이력 삭제 버튼 -->
-                                            <button type="button" class="btn-history-delete" onclick="openSafeDeleteVerifyModalById('${med.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'">
+                                            <button type="button" class="btn-history-delete" data-med-id="${med.id}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'">
                                                 <i class="fa-solid fa-trash-can"></i> <span>이력 삭제</span>
                                             </button>
                                         </div>
