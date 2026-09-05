@@ -3054,10 +3054,19 @@
                 
                 <div>
                     <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 14.5px;">삭제될 의약품 이름</label>
-                    <div id="delete-med-target-display" 
-                         style="font-weight: 800; font-size: 17px; color: #ef4444; background: rgba(239,68,68,0.08); padding: 16px 20px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 18px; text-align: center; line-height: 1.4;">
+                    <div id="delete-med-target-display" onclick="handleDeleteMedNameTouch()" 
+                         style="font-weight: 800; font-size: 17px; color: #ef4444; background: rgba(239,68,68,0.08); padding: 16px 20px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 12px; text-align: center; line-height: 1.4; cursor: pointer;"
+                         title="이름을 콕! 누르면 아래 입력란에 자동으로 들어갑니다.">
                         <span id="delete-med-target-text" style="word-break: break-all;">-</span>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #f87171; margin-top: 6px;">
+                            👉 <i class="fa-solid fa-hand-pointer"></i> 이곳을 콕! 누르시면 글자가 자동으로 입력됩니다.
+                        </div>
                     </div>
+                </div>
+
+                <div style="margin-bottom: 18px;">
+                    <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 14.5px;">안전 삭제 확인 입력란</label>
+                    <input type="text" id="delete-confirm-input" class="form-input" placeholder="위의 약 이름을 입력해 주세요." autocomplete="off" style="text-align: center; border-color: rgba(239,68,68,0.3); font-weight: 800; height: 46px; font-size: 15px; background: rgba(0,0,0,0.15);" required>
                 </div>
                 
                 <div style="margin-top: 22px; margin-bottom: 10px; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
@@ -5164,6 +5173,12 @@
             document.getElementById("delete-med-id").value = medId;
             document.getElementById("delete-med-fullname").value = medName;
             
+            // 입력 상자 초기화
+            const inputField = document.getElementById("delete-confirm-input");
+            if (inputField) {
+                inputField.value = "";
+            }
+            
             // 시각화 타겟 텍스트 바인딩 (자식 스팬인 delete-med-target-text 에 매핑)
             const targetTextSpan = document.getElementById("delete-med-target-text");
             if (targetTextSpan) {
@@ -5180,10 +5195,30 @@
             document.getElementById("delete-verify-modal-overlay").classList.remove("active");
         }
 
+        /**
+         * 👵👴 [어르신 안심 0타이핑 자동완성 도우미]: 약 이름을 콕 터치하면 사르륵 대입해 줍니다.
+         */
+        window.handleDeleteMedNameTouch = function() {
+            const fullName = document.getElementById("delete-med-fullname").value;
+            const inputField = document.getElementById("delete-confirm-input");
+            if (fullName && inputField) {
+                inputField.value = fullName;
+                showToast("✨ 글자가 자동으로 예쁘게 입력되었습니다! 이제 'O 예, 지웁니다' 버튼을 누르세요.", "success");
+            }
+        };
+
         async function handleSafeDeleteVerifySubmit(e) {
             e.preventDefault();
             
             const medId = document.getElementById("delete-med-id").value;
+            const targetName = document.getElementById("delete-med-fullname").value.trim();
+            const userInput = document.getElementById("delete-confirm-input").value.trim();
+            
+            // 2차 정밀 문자열 일치 검증 (어르신 실수 원천 봉쇄)
+            if (userInput !== targetName) {
+                showToast("⚠️ 입력한 약물명이 일치하지 않습니다. 위의 이름을 콕! 터치하시거나 똑같이 써 주세요.", "error");
+                return;
+            }
             
             // 👵👴 [초안전 검증]: 세션 누락 또는 변수 유실 체크
             if (!currentUser || !currentUser.id) {
