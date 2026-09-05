@@ -232,7 +232,7 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
@@ -275,7 +275,7 @@ ${text}
             const result = await model.generateContent(prompt);
             responseText = result.response.text().trim();
         } catch (apiErr) {
-            console.error("Gemini 1.5 Flash 건강검진 텍스트 API 연동 에러:", apiErr);
+            console.error("Gemini 2.5 Flash 건강검진 텍스트 API 연동 에러:", apiErr);
             return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
         }
 
@@ -323,7 +323,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서 원본 이미지를 눈으로 읽고 분석하여 데이터를 정형화하는 'Pillip' 메디컬 비전 AI 어시스턴트입니다.
@@ -366,7 +366,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
             const result = await model.generateContent([prompt, imagePart]);
             responseText = result.response.text().trim();
         } catch (apiErr) {
-            console.error("Gemini 1.5 Flash 건강검진 비전 이미지 API 연동 에러:", apiErr);
+            console.error("Gemini 2.5 Flash 건강검진 비전 이미지 API 연동 에러:", apiErr);
             return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
         }
 
@@ -543,7 +543,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 `;
 
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
                 if (visionText.includes("```")) {
@@ -625,7 +625,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
             let parsedAnalysis = {};
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
                 const response = await model.generateContent(analysisPrompt);
                 let responseText = response.response.text().trim();
                 if (responseText.includes("```")) {
@@ -1042,14 +1042,14 @@ app.post("/api/chats/message", async (req, res) => {
 스마트폰 화면에 가독성이 뛰어나도록 이모티콘을 예쁘게 활용하고 적절한 줄바꿈과 마크다운 굵은 강조(**)를 조합해 주세요.
 `;
 
-        // 5. Gemini 1.5 Flash 엔진 가동하여 메디컬 가이드 조율 (안전 최우선 Try-Catch 장전)
+        // 5. Gemini 2.5-Flash 엔진 가동하여 메디컬 가이드 조율 (안전 최우선 Try-Catch 장전)
         let reply = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const result = await model.generateContent(contextPrompt);
             reply = result.response.text().trim();
         } catch (apiErr) {
-            console.error("Gemini 1.5-Flash API 호출 실패 에러 발생:", apiErr);
+            console.error("Gemini 2.5-Flash API 호출 실패 에러 발생:", apiErr);
             // 🛡️ API 통신 실패 및 모델 404/할당량 초과 에러 시에도 서버 크래시를 원천 차단하고 아래 예쁜 메시지 반환!
             return res.status(200).json({
                 reply: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
@@ -1106,7 +1106,7 @@ app.post("/api/pillip/chat", async (req, res) => {
 
         let reply = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const result = await model.generateContent(message);
             reply = result.response.text().trim();
         } catch (apiErr) {
