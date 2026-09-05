@@ -230,9 +230,11 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
         const phoneRegex = /010\s*-\s*\d{3,4}\s*-\s*\d{4}/g;
         text = text.replace(rrnRegex, "XXXXXX-XXXXXXX").replace(phoneRegex, "010-XXXX-XXXX");
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        let responseText = "";
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        const prompt = `
+            const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
 제공된 건강검진 결과통보서 텍스트를 정밀히 읽고, 아래 명시된 건강 수치 항목들의 값을 완벽하게 파악하여 오직 지정된 규격의 JSON 객체로만 응답해 주세요.
 
@@ -270,8 +272,12 @@ ${text}
 주의: 마크다운 펜스(예: \`\`\`json ... \`\`\`) 등 JSON 이외의 어떠한 불필요한 설명이나 주석 텍스트도 앞뒤로 반환하지 마세요. 반드시 완벽한 단일 JSON 데이터만 응답할 것.
 `;
 
-        const result = await model.generateContent(prompt);
-        let responseText = result.response.text().trim();
+            const result = await model.generateContent(prompt);
+            responseText = result.response.text().trim();
+        } catch (apiErr) {
+            console.error("Gemini 1.5 Flash 건강검진 텍스트 API 연동 에러:", apiErr);
+            return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
+        }
 
         // 마크다운 백틱 청소 가드
         if (responseText.includes("```")) {
@@ -294,7 +300,7 @@ ${text}
     } catch (err) {
         console.error("검진표 분석 중 치명적 예외 발생:", err);
         res.status(500).json({ 
-            error: "건강검진표 AI 정밀 분석 중 서버 오류가 발생했습니다.",
+            error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
             detail: err.message 
         });
     }
@@ -307,8 +313,6 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
             return res.status(400).json({ error: "업로드된 건강검진표 이미지 파일이 없습니다." });
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
         // 이미지 버퍼를 Gemini 인라인 데이터 파트로 가공
         const imagePart = {
             inlineData: {
@@ -317,7 +321,11 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
             }
         };
 
-        const prompt = `
+        let responseText = "";
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+            const prompt = `
 당신은 대한민국 일반건강검진 결과통보서 원본 이미지를 눈으로 읽고 분석하여 데이터를 정형화하는 'Pillip' 메디컬 비전 AI 어시스턴트입니다.
 제공된 건강검진 결과통보서 사진 이미지를 아주 상세히 돋보기로 보듯 해독하여, 아래 명시된 건강 수치 항목들의 값을 완벽하게 추출해 오직 지정된 규격의 JSON 객체로만 응답해 주세요.
 
@@ -355,8 +363,12 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
 주의: 마크다운 펜스(예: \`\`\`json ... \`\`\`) 등 JSON 이외의 어떠한 불필요한 설명이나 주석 텍스트도 앞뒤로 반환하지 마세요. 반드시 완벽한 단일 JSON 데이터만 응답할 것.
 `;
 
-        const result = await model.generateContent([prompt, imagePart]);
-        let responseText = result.response.text().trim();
+            const result = await model.generateContent([prompt, imagePart]);
+            responseText = result.response.text().trim();
+        } catch (apiErr) {
+            console.error("Gemini 1.5 Flash 건강검진 비전 이미지 API 연동 에러:", apiErr);
+            return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
+        }
 
         // 마크다운 백틱 청소 가드
         if (responseText.includes("```")) {
@@ -379,7 +391,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
     } catch (err) {
         console.error("검진표 비전 분석 중 예외 발생:", err);
         res.status(500).json({ 
-            error: "건강검진표 이미지 AI 해독 중 서버에 오류가 발생했습니다.",
+            error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
             detail: err.message 
         });
     }
@@ -503,7 +515,6 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
         // 📸 1. 이미지 사진(약봉투/처방전) 업로드 시나리오 (다중 약물 스캔 기능 탑재)
         if (req.file) {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
             const imagePart = {
                 inlineData: {
                     data: req.file.buffer.toString("base64"),
@@ -532,6 +543,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 `;
 
             try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
                 if (visionText.includes("```")) {
@@ -552,6 +564,8 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 }
             } catch (visionErr) {
                 console.error("약봉투/처방전 다중 비전 분석 실패 폴백 가동:", visionErr);
+                // 이미지 해독 중 API 에러 발생 시 전체가 다운되지 않도록 깔끔하게 가드
+                return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
             }
         }
 
@@ -566,7 +580,6 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
         }
 
         // 🩺 3. 추출된 모든 약물들에 대해 "순차적으로 식약처 RAG 정밀 분석" 후 일괄 복약 등록 개시!
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const newlyRegisteredRecords = [];
 
         for (const med of targetMedications) {
@@ -612,6 +625,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
             let parsedAnalysis = {};
             try {
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const response = await model.generateContent(analysisPrompt);
                 let responseText = response.response.text().trim();
                 if (responseText.includes("```")) {
@@ -620,6 +634,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 parsedAnalysis = JSON.parse(responseText);
             } catch (pe) {
                 console.error(`약물 [${cleanMedName}] 식약처 RAG 분석 에러 발생 폴백 작동:`, pe);
+                // AI 응답이 실패하더라도 서버 크래시를 완벽 차단하고 우아한 정형 데이터 폴백 수혈
                 parsedAnalysis = {
                     name: cleanMedName,
                     efficacy: "직접 기재해 주세요.",
@@ -695,8 +710,8 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
         });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "의약품 다중 등록 분석 과정 중 치명적 예외가 발생했습니다." });
+        console.error("약물 일괄 분석 등록 치명적 오류:", err);
+        res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
     }
 });
 
@@ -709,7 +724,7 @@ app.get("/api/medications/:userId", (req, res) => {
         res.json(list);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "조회 중 요류 발생" });
+        res.status(500).json({ error: "조회 중 오류 발생" });
     }
 });
 
@@ -1027,10 +1042,21 @@ app.post("/api/chats/message", async (req, res) => {
 스마트폰 화면에 가독성이 뛰어나도록 이모티콘을 예쁘게 활용하고 적절한 줄바꿈과 마크다운 굵은 강조(**)를 조합해 주세요.
 `;
 
-        // 5. Gemini 3.6 Flash 엔진 가동하여 메디컬 가이드 조율
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(contextPrompt);
-        const reply = result.response.text().trim();
+        // 5. Gemini 1.5 Flash 엔진 가동하여 메디컬 가이드 조율 (안전 최우선 Try-Catch 장전)
+        let reply = "";
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const result = await model.generateContent(contextPrompt);
+            reply = result.response.text().trim();
+        } catch (apiErr) {
+            console.error("Gemini 1.5-Flash API 호출 실패 에러 발생:", apiErr);
+            // 🛡️ API 통신 실패 및 모델 404/할당량 초과 에러 시에도 서버 크래시를 원천 차단하고 아래 예쁜 메시지 반환!
+            return res.status(200).json({
+                reply: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
+                userMessage: { id: userMsgId, sender: "user", message, createdAt: userChatRecord.createdAt },
+                pillipMessage: { id: "msg_pillip_fallback_" + Date.now(), sender: "pillip", message: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.", createdAt: Date.now() }
+            });
+        }
 
         // 6. AI의 맞춤 복약 진단 메시지 암호화 후 디스크 영구 적재
         const pillipMsgId = "msg_pillip_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
@@ -1057,7 +1083,12 @@ app.post("/api/chats/message", async (req, res) => {
 
     } catch (err) {
         console.error("필립 분기 대화 처리 예외:", err);
-        res.status(500).json({ reply: "🩺 죄송해요, 잠시 필립 비서의 머릿속 정리가 필요해요. 시원한 물 한 잔 드시고 잠시 후에 다시 속삭여 주세요! ✨" });
+        // 서버 다운 방지를 위한 예외 처리 강화
+        res.status(200).json({ 
+            reply: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.",
+            userMessage: { id: "msg_user_err_" + Date.now(), sender: "user", message, createdAt: Date.now() },
+            pillipMessage: { id: "msg_pillip_err_" + Date.now(), sender: "pillip", message: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.", createdAt: Date.now() }
+        });
     }
 });
 
@@ -1066,21 +1097,27 @@ app.post("/api/pillip/chat", async (req, res) => {
     try {
         const { message, medicationContext } = req.body;
         if (!message) {
-            return res.status(400).json({ error: "메시지 내용이 누가 되었습니다." });
+            return res.status(400).json({ error: "메시지 내용이 누락되었습니다." });
         }
         
         // 구버전 단일 대화는 "general" 세션으로 매핑하여 유기적으로 연동 수렴
         const userId = medicationContext?.userId || "user_default";
         const sessionId = medicationContext?.id || "general";
 
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const result = await model.generateContent(message);
-        const reply = result.response.text().trim();
+        let reply = "";
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const result = await model.generateContent(message);
+            reply = result.response.text().trim();
+        } catch (apiErr) {
+            console.error("구버전 대화 API 연동 중 제미나이 에러:", apiErr);
+            return res.status(200).json({ reply: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
+        }
         
         res.json({ reply });
     } catch (err) {
         console.error("구버전 대화 API 폴백 실패:", err);
-        res.status(500).json({ reply: "🩺 구버전 API 통신 상 일시적 점검 단계입니다." });
+        res.status(200).json({ reply: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
     }
 });
 
