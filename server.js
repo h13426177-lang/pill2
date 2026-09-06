@@ -498,7 +498,7 @@ app.get("/api/medications/search", async (req, res) => {
 // ==========================================
 // [3. 💊 신규 약물 분석 & 등록 API (Gemini Vision / Text RAG 연동 - 다중 약물 일괄 등록 지원)]
 // ==========================================
-app.post("/api/medications/register/:userId", upload.single("prescriptionImage"), async (req, res) => {
+app.post("/api/medications/register/:userId", upload.single("image"), async (req, res) => {
     try {
         const { userId } = req.params;
         const { medicationName, prescriptionDate, prescriptionDays } = req.body;
