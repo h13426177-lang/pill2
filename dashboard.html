@@ -1009,6 +1009,29 @@
             transform: scale(1.15);
         }
 
+        /* 👵👴 [어르신용 이력 삭제 버튼 전용 소프트-레드 스타일 시트] */
+        .btn-history-delete {
+            background: rgba(248, 113, 113, 0.08) !important;
+            color: #f87171 !important;
+            border: 1px solid rgba(248, 113, 113, 0.2) !important;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition-smooth);
+        }
+        .btn-history-delete:hover {
+            background: #ef4444 !important;
+            color: #fff !important;
+            border-color: #ef4444 !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+            transform: translateY(-1px);
+        }
+
         .divider-or {
             display: flex;
             align-items: center;
@@ -3054,10 +3077,19 @@
                 
                 <div>
                     <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 14.5px;">삭제될 의약품 이름</label>
-                    <div id="delete-med-target-display" 
-                         style="font-weight: 800; font-size: 17px; color: #ef4444; background: rgba(239,68,68,0.08); padding: 16px 20px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 18px; text-align: center; line-height: 1.4;">
+                    <div id="delete-med-target-display" onclick="handleDeleteMedNameTouch()" 
+                         style="font-weight: 800; font-size: 17px; color: #ef4444; background: rgba(239,68,68,0.08); padding: 16px 20px; border-radius: 12px; border: 2px solid #f87171; margin-bottom: 12px; text-align: center; line-height: 1.4; cursor: pointer;"
+                         title="이름을 콕! 누르면 아래 입력란에 자동으로 들어갑니다.">
                         <span id="delete-med-target-text" style="word-break: break-all;">-</span>
+                        <div style="font-size: 11.5px; font-weight: 800; color: #f87171; margin-top: 6px;">
+                            👉 <i class="fa-solid fa-hand-pointer"></i> 이곳을 콕! 누르시면 글자가 자동으로 입력됩니다.
+                        </div>
                     </div>
+                </div>
+
+                <div style="margin-bottom: 18px;">
+                    <label class="form-label" style="font-weight: 700; margin-bottom: 8px; display: block; font-size: 14.5px;">안전 삭제 확인 입력란</label>
+                    <input type="text" id="delete-confirm-input" class="form-input" placeholder="위의 약 이름을 입력해 주세요." autocomplete="off" style="text-align: center; border-color: rgba(239,68,68,0.3); font-weight: 800; height: 46px; font-size: 15px; background: rgba(0,0,0,0.15);" required>
                 </div>
                 
                 <div style="margin-top: 22px; margin-bottom: 10px; text-align: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
@@ -3095,7 +3127,11 @@
         // 글로벌 상태 변수
         let currentUser = null;
         let selectedFile = null;
-        const API_BASE = "";
+        const API_BASE = (window.location.hostname === "localhost" || 
+                          window.location.hostname === "127.0.0.1" || 
+                          window.location.protocol === "file:") 
+                          ? "https://pill2.onrender.com" 
+                          : "";
             
         // 달력 상태 관리 변수
         let currentDate = new Date();
@@ -3112,65 +3148,96 @@
 
         // 페이지 기동 및 세션 무결성 검증
         window.addEventListener("DOMContentLoaded", () => {
+            console.log("🚀 SafeDrug AI 자바스크립트 엔진 정상 기동 완료! 최신 어르신 안심 롤백 핫픽스가 탑재되었습니다.");
             const rawUser = localStorage.getItem("currentUser");
             if (!rawUser) {
                 location.href = "login.html";
                 return;
             }
 
-            currentUser = JSON.parse(rawUser);
-            
-            // 모바일 로그아웃 뷰 가시성 조절
-            if(window.innerWidth <= 768) {
-                document.getElementById("mobile-logout-btn").style.display = "flex";
+            try {
+                currentUser = JSON.parse(rawUser);
+            } catch (e) {
+                console.error("유저 세션 파싱 오류:", e);
+                location.href = "login.html";
+                return;
             }
+            
+            // 모바일 로그아웃 뷰 가시성 조절 (오류 방어 가드 장착)
+            try {
+                if(window.innerWidth <= 768) {
+                    const mobBtn = document.getElementById("mobile-logout-btn");
+                    if (mobBtn) mobBtn.style.display = "flex";
+                }
+            } catch (e) { console.warn("모바일 버튼 가드 우회:", e.message); }
 
             // UI 바인딩 및 프로필 초기화
             updateUserHeader();
             loadProfileData();
 
             // 백그라운드 데이터 수신 초기 로딩 개시
-            fetchUserMedicationHistory();
-            fetchCalendarData();
-            fetchAlarmsData(); // 알람 스케줄 로드
+            try { fetchUserMedicationHistory(); } catch (e) { console.error("복용 이력 로딩 실패:", e); }
+            try { fetchCalendarData(); } catch (e) { console.error("달력 로딩 실패:", e); }
+            try { fetchAlarmsData(); } catch (e) { console.error("알람 로딩 실패:", e); }
 
             // 브라우저 OS 알림 예약 권한 요청
-            requestBrowserNotificationPermission();
+            try { requestBrowserNotificationPermission(); } catch (e) { console.warn("알림 권한 가드 우회:", e.message); }
 
             // 드래그 앤 드롭 파일 첨부 바인딩
-            setupDragAndDrop();
+            try { setupDragAndDrop(); } catch (e) { console.warn("드롭존 바인딩 가드 우회:", e.message); }
 
             // 필립 비서 자바스크립트 리스너 연결
-            setupPillipListeners();
+            try { setupPillipListeners(); } catch (e) { console.warn("필립 비서 바인딩 가드 우회:", e.message); }
 
             // 💡 부분 일치 식약처 후보군 수동 조작 바인딩
-            setupKfdaCandidateListeners();
+            try { setupKfdaCandidateListeners(); } catch (e) { console.warn("식약처 후보군 바인딩 가드 우회:", e.message); }
 
-            // PDF 버튼 동적 연결
-            document.getElementById("btn-pdf-download").addEventListener("click", downloadPDFReport);
+            // PDF 버튼 동적 연결 (요소 유실 완벽 방지)
+            try {
+                const pdfBtn = document.getElementById("btn-pdf-download");
+                if (pdfBtn) {
+                    pdfBtn.addEventListener("click", downloadPDFReport);
+                }
+            } catch (e) { console.warn("PDF 버튼 바인딩 가드 우회:", e.message); }
 
             // 15초 주기 알람 타임체크 스케줄러 개시
-            setInterval(checkAlarmsScheduler, 15000);
+            try { setInterval(checkAlarmsScheduler, 15000); } catch (e) { console.warn("알람 스케줄러 가드 우회:", e.message); }
 
-            // 초기 프로필 로드 바인딩
-            if (currentUser) {
-                document.getElementById("profile-age").value = currentUser.age || "";
-                document.getElementById("profile-illness").value = currentUser.illness || "";
-                document.getElementById("profile-allergies").value = currentUser.allergies || "";
-            }
+            // 초기 프로필 로드 바인딩 (요소 유실 완벽 방지)
+            try {
+                if (currentUser) {
+                    const ageInput = document.getElementById("profile-age");
+                    if (ageInput) ageInput.value = currentUser.age || "";
+                    const illInput = document.getElementById("profile-illness");
+                    if (illInput) illInput.value = currentUser.illness || "";
+                    const allInput = document.getElementById("profile-allergies");
+                    if (allInput) allInput.value = currentUser.allergies || "";
+                }
+            } catch (e) { console.warn("프로필 인풋 바인딩 가드 우회:", e.message); }
             
             // Initialize prescription date input default value to today
-            const rxDateInput = document.getElementById("med-prescription-date");
-            if (rxDateInput) {
-                rxDateInput.value = new Date().toISOString().substring(0, 10);
-            }
+            try {
+                const rxDateInput = document.getElementById("med-prescription-date");
+                if (rxDateInput) {
+                    rxDateInput.value = new Date().toISOString().substring(0, 10);
+                }
+            } catch (e) { console.warn("처방전 날짜 바인딩 가드 우회:", e.message); }
         });
 
-        // 1. 유저 헤더 동적 세팅
+        // 1. 유저 헤더 동적 세팅 (오류 방어 가드 강화)
         function updateUserHeader() {
-            document.getElementById("user-display-name").innerText = `${currentUser.name} 님`;
-            document.getElementById("user-display-email").innerText = `@${currentUser.username}`;
-            document.getElementById("user-avatar-initial").innerText = currentUser.name.trim().substring(0, 1);
+            try {
+                const nameEl = document.getElementById("user-display-name");
+                if (nameEl) nameEl.innerText = `${currentUser.name} 님`;
+                const emailEl = document.getElementById("user-display-email");
+                if (emailEl) emailEl.innerText = `@${currentUser.username}`;
+                const avatarEl = document.getElementById("user-avatar-initial");
+                if (avatarEl && currentUser.name) {
+                    avatarEl.innerText = currentUser.name.trim().substring(0, 1);
+                }
+            } catch (e) {
+                console.warn("유저 헤더 로딩 가드 우회:", e.message);
+            }
         }
 
         // 2. 로그아웃 제어 핸들러
@@ -3480,23 +3547,156 @@
         let globalMedications = []; 
 
         // 🛡️ [우주 초강력 100% 네이티브 직다이렉트 클릭 감지기 - 전역 상시 대피소]
-        window.openAlarmModalById = function(medId) {
+        window.openAlarmModalById = async function(medId, btnElement) {
             const med = globalMedications.find(m => String(m.id) === String(medId));
-            if (med) {
-                openAlarmModal(med.name);
-            } else {
+            if (!med) {
                 showToast("해당 약품 정보를 찾을 수 없습니다.", "error");
+                return;
+            }
+
+            // 버튼에서 데이터 속성 안전하게 추출 (기본 폴백 3일 지정)
+            const medName = btnElement ? btnElement.getAttribute("data-med-name") || med.name : med.name;
+            const duration = parseInt(btnElement ? btnElement.getAttribute("data-duration") || med.prescriptionDays : med.prescriptionDays) || 3;
+
+            // 로딩 상태 피드백 임시 시각화
+            if (btnElement) {
+                btnElement.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>일정 등록중...</span>`;
+                btnElement.style.pointerEvents = 'none';
+            }
+
+            try {
+                // 오늘 날짜부터 시작하여 duration(복용일수) 동안 루프 돌며 알람 일정 등록 API 호출
+                const today = new Date();
+                const promises = [];
+
+                for (let i = 0; i < duration; i++) {
+                    const nextDate = new Date(today);
+                    nextDate.setDate(today.getDate() + i);
+                    
+                    const year = nextDate.getFullYear();
+                    const month = String(nextDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(nextDate.getDate()).padStart(2, '0');
+                    const dateString = `${year}-${month}-${day}`;
+
+                    // 하루 3회(아침 09:00, 점심 13:00, 저녁 19:00) 복약 알람 일정을 데이터베이스에 든든하게 주입!
+                    const times = ["09:00", "13:00", "19:00"];
+                    times.forEach(time => {
+                        promises.push(
+                            fetch(`${API_BASE}/api/alarms/add/${currentUser.id}`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    medicationName: medName,
+                                    dateTime: `${dateString}T${time}`
+                                })
+                            })
+                        );
+                    });
+                }
+
+                // 모든 알림 API 비동기 완료 동기화
+                await Promise.all(promises);
+
+                // 달력 데이터 및 알림 리스트 동기화 호출
+                if (typeof fetchAlarmsData === "function") await fetchAlarmsData();
+                if (typeof fetchCalendarData === "function") await fetchCalendarData();
+
+                alert(`'${medName}'의 ${duration}일간 복약 스케줄(하루 3회)이 달력과 알림에 완벽하게 연동되었습니다! ⏰📅`);
+
+                if (btnElement) {
+                    btnElement.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>알림 완료</span>`;
+                    btnElement.style.background = 'rgba(16, 185, 129, 0.2)';
+                    btnElement.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    btnElement.style.color = '#10b981';
+                    btnElement.setAttribute("disabled", "true");
+                    btnElement.style.cursor = 'default';
+                    btnElement.style.pointerEvents = 'none';
+                }
+
+            } catch (err) {
+                console.error("복약 스케줄 달력 연동 오류:", err);
+                showToast("일부 복약 알림 일정을 달력에 등록하는 중 오류가 발생했습니다.", "error");
+                
+                // 에러 복구 폴백
+                if (btnElement) {
+                    btnElement.innerHTML = `<i class="fa-solid fa-bell"></i> <span>알림 신청</span>`;
+                    btnElement.style.pointerEvents = 'auto';
+                }
             }
         };
 
-        window.openSafeDeleteVerifyModalById = function(medId) {
+        window.openSafeDeleteVerifyModalById = async function(medId) {
+            console.log("📞 [이력삭제 클릭 감지] 수신 약물 ID:", medId);
             const med = globalMedications.find(m => String(m.id) === String(medId));
-            if (med) {
-                openSafeDeleteVerifyModal(med.id, med.name);
-            } else {
+            if (!med) {
                 showToast("삭제할 기록 정보를 찾을 수 없습니다.", "error");
+                return;
+            }
+
+            if (confirm(`정말로 복용 히스토리에서 '${med.name}' 기록을 소거하시겠습니까?`)) {
+                try {
+                    const response = await fetch(`${API_BASE}/api/medications/delete/${currentUser.id}/${medId}`, {
+                        method: "POST"
+                    });
+                    const resData = await response.json();
+
+                    if (response.ok && resData.success) {
+                        showToast(`'${med.name}' 기록이 성공적으로 삭제되었습니다.`, "success");
+                        // 🚀 [초고속 DOM 동적 프루닝]: 화면에서 해당 타임라인 카드를 찾아서 자연스럽게 삭제
+                        const deleteBtn = document.querySelector(`.btn-history-delete[data-med-id="${medId}"]`);
+                        if (deleteBtn) {
+                            const timelineItem = deleteBtn.closest('.timeline-item');
+                            if (timelineItem) {
+                                timelineItem.style.opacity = '0';
+                                timelineItem.style.transform = 'scale(0.9)';
+                                timelineItem.style.transition = 'all 0.4s ease';
+                                setTimeout(() => {
+                                    timelineItem.remove();
+                                    // 만약 남은 히스토리가 없다면 새로고침하여 빈 화면(Empty State) 출력 유도
+                                    const container = document.getElementById("medication-timeline");
+                                    if (container && container.querySelectorAll('.timeline-item').length === 0) {
+                                        fetchUserMedicationHistory();
+                                    }
+                                }, 400);
+                            }
+                        }
+                    } else {
+                        throw new Error(resData.error || "삭제 처리 중 서버 에러가 발생했습니다.");
+                    }
+                } catch (err) {
+                    console.error("이력 삭제 에러:", err);
+                    showToast(err.message, "error");
+                }
             }
         };
+
+        // 🔗 [이벤트 위임 패턴 (Event Delegation) 탑재]: 정적 부모 컨테이너에 단 하나의 클릭 이벤트만 바인딩하여 영구 작동 보장
+        document.addEventListener("DOMContentLoaded", () => {
+            const timelineContainer = document.getElementById("medication-timeline");
+            if (timelineContainer) {
+                timelineContainer.addEventListener("click", (e) => {
+                    // 1. 알림 신청 버튼 클릭 판별 (아이콘이나 텍스트를 눌러도 최상위 버튼을 낚아챔)
+                    const alarmBtn = e.target.closest(".btn-history-alarm");
+                    if (alarmBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const medId = alarmBtn.getAttribute("data-med-id");
+                        openAlarmModalById(medId, alarmBtn);
+                        return;
+                    }
+
+                    // 2. 이력 삭제 버튼 클릭 판별
+                    const deleteBtn = e.target.closest(".btn-history-delete");
+                    if (deleteBtn) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const medId = deleteBtn.getAttribute("data-med-id");
+                        openSafeDeleteVerifyModalById(medId);
+                        return;
+                    }
+                });
+            }
+        });
 
         async function fetchUserMedicationHistory() {
             try {
@@ -3553,91 +3753,53 @@
                     const simScore = med.sim_score || 0;
                     const simReason = med.sim_reason || "안전한 단독 복용 상태입니다.";
 
-                    // 식약처 연동 의약 정보 수집 사전 마크업 구성
-                    let kfdaDetailHTML = "";
-                    if (med.kfda_info) {
-                        kfdaDetailHTML = `
-                            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; color: #fff;">
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700; width: 120px;">공식 효능효과</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.effect || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">용법용량</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border);">${med.kfda_info.usage || "정보 없음"}</td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); font-weight: 700;">주의사항 (금기)</td>
-                                    <td style="padding: 4px; border: 1px solid var(--panel-border); color: var(--status-danger); font-weight: 600;">${med.kfda_info.caution || "정보 없음"}</td>
-                                </tr>
-                            </table>
-                            <div class="accordion-btn-group">
-                                <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
-                                    <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 진단받기 💬
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        kfdaDetailHTML = `
-                            <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px;">
-                                <i class="fa-solid fa-circle-exclamation mr-1"></i> 식약처 공공 검색 사전에서 매칭되는 의약품 정보가 수집되지 않았습니다. <br>대신 Pillip 비서에게 물어보시면 상세 복약 조언을 Gemini가 직관적으로 제공해 드립니다.
-                                <div style="margin-top:10px;">
-                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${i})">
-                                        <i class="fa-solid fa-comment-medical"></i> Pillip 약사 AI 정밀 상담 개시 💬
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
+                    // 💡 [실시간 수집 지연 로딩]: 아코디언이 처음 오픈될 때 백엔드 프록시를 통해 실시간으로 e약은요 공공데이터를 긁어옵니다!
+                    let kfdaDetailHTML = `
+                        <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px; text-align: center;">
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> 식약처 공공 데이터 수집 준비 완료 (클릭 시 실시간 동기화)
+                        </div>
+                    `;
 
-                    timelineHTML += `
-                        <div class="timeline-item ${med.risk}">
-                            <div class="timeline-dot"></div>
-                            <div class="timeline-card" style="overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
-                                
-                                <div class="timeline-card-content" style="position: relative; z-index: 10;">
-                                    <div class="timeline-header" style="margin-bottom: 8px;">
-                                        <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
-                                    </div>
-                                    <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom: 12px;">
-                                        <span style="font-size: 12px; color: var(--text-muted);">처방 분석일: ${formattedDate}</span>
-                                        <div style="display:flex; gap:6px;">
-                                            <span style="background:rgba(129,140,248,0.12); color:#818cf8; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">처방 시작일: ${pDateStr}</span>
-                                            <span style="background:rgba(16,185,129,0.12); color:#10b981; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">복용 기간: ${pDays}일 ${isPrescriptionExpired ? "(복용완료)" : ""}</span>
-                                        </div>
-                                    </div>
+                                    // 💡 [아이콘 및 색상 분기 로직]: '안전' 혹은 '안심'이 포함된 상황일 땐 초록색 체크 마크, 경고 시에는 삼각 경고등 출력
+                                    let statusIconHTML = `<i class="fa-solid fa-triangle-exclamation mr-1" style="color: #ef4444;"></i>`;
+                                    if (med.reason && (med.reason.includes("안전") || med.reason.includes("안심") || med.reason.includes("정상") || med.reason.includes("보장"))) {
+                                        statusIconHTML = `<i class="fa-solid fa-circle-check mr-1" style="color: #10b981;"></i>`;
+                                    } else if (med.reason && (med.reason.includes("주의") || med.reason.includes("부작용") || med.reason.includes("위험") || med.reason.includes("병용금기"))) {
+                                        statusIconHTML = `<i class="fa-solid fa-triangle-exclamation mr-1" style="color: #f59e0b;"></i>`;
+                                    }
 
-                                    <!-- 💊 Realtime Pharmacokinetics Panel -->
-                                    <div class="pharmacology-panel" style="background: rgba(255,255,255,0.02); border: 1px solid var(--panel-border); padding: 14px; border-radius: 12px; margin-top: 12px; font-size: 13px;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                            <span style="font-weight: 700; color: var(--color-primary); display: flex; align-items: center; gap: 4px;">
-                                                <i class="fa-solid fa-droplet"></i> 체내 약물 성분 잔존율 시뮬레이션
-                                            </span>
-                                            <span style="font-weight: 800; color: var(--color-primary-light);">${residualPercent.toFixed(1)}%</span>
-                                        </div>
-                                        <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.02);">
-                                            <div style="width: ${residualPercent}%; height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light)); border-radius: 4px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                                        </div>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
-                                            <div>
-                                                <span style="font-weight: 600; color: var(--text-main);">약효 반감기:</span> ${halfLife}시간
-                                            </div>
-                                            <div>
-                                                <span style="font-weight: 600; color: var(--text-main);">완전 체외배출:</span> 약 ${excretionTime}시간
-                                            </div>
-                                        </div>
-                                        <div style="border-top: 1px dashed var(--panel-border); margin-top: 8px; padding-top: 8px; font-size: 11px; display: flex; flex-direction: column; gap: 2px;">
-                                            <div style="display: flex; justify-content: space-between;">
-                                                <span style="font-weight: 600; color: var(--text-main);">기존 복용 약물과의 약효 구조 유사도:</span>
-                                                <span style="font-weight: 800; color: ${simScore > 50 ? "#f87171" : "#34d399"};">${simScore}%</span>
-                                            </div>
-                                            <div style="color: var(--text-muted); line-height: 1.3;">${simReason}</div>
-                                        </div>
-                                    </div>
+                                    timelineHTML += `
+                                        <div class="timeline-item ${med.risk}">
+                                            <div class="timeline-dot"></div>
+                                            <div class="timeline-card" style="overflow: hidden; padding: 20px; background: var(--bg-card); border: 1px solid var(--panel-border); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); position: relative; z-index: 10; pointer-events: auto;">
+                                                
+                                                <div class="timeline-card-content" style="position: relative; z-index: 10;">
+                                                    <div class="timeline-header" style="margin-bottom: 8px;">
+                                                        <span class="timeline-med-name" style="font-size: 18px; font-weight: 800; color: var(--text-main);">${med.name}</span>
+                                                    </div>
+                                                    <div class="timeline-date" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom: 12px;">
+                                                        <span style="font-size: 12px; color: var(--text-muted);">처방 분석일: ${formattedDate}</span>
+                                                        <div style="display:flex; gap:6px;">
+                                                            <span style="background:rgba(129,140,248,0.12); color:#818cf8; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">처방 시작일: ${pDateStr}</span>
+                                                            <span style="background:rgba(16,185,129,0.12); color:#10b981; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;">복용 기간: ${pDays}일 ${isPrescriptionExpired ? "(복용완료)" : ""}</span>
+                                                        </div>
+                                                    </div>
 
-                                    <p class="timeline-desc" style="margin-top: 12px; color: var(--text-main); font-weight: 500;">
-                                        <i class="fa-solid fa-triangle-exclamation text-indigo-400 mr-1"></i> ${med.reason}
-                                    </p>
+                                                    <!-- 💡 [사용자 요청]: 원래 잔존율 시뮬레이션 칸이 있던 자리에 왼쪽 정렬로 안전하게 배치한 알림 신청 & 이력 삭제 버튼 영역 -->
+                                                    <div class="timeline-action-buttons" style="display: flex; justify-content: flex-start; gap: 8px; margin-top: 12px; margin-bottom: 16px; position: relative; z-index: 20; pointer-events: auto;">
+                                                        <!-- ⏰ 복약 알림 신청 버튼 -->
+                                                        <button type="button" class="btn-history-alarm" data-med-id="${med.id}" data-med-name="${med.name}" data-duration="${pDays}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(129, 140, 248, 0.25)'" onmouseout="this.style.background='rgba(129, 140, 248, 0.15)'">
+                                                            <i class="fa-solid fa-bell"></i> <span>알림 신청</span>
+                                                        </button>
+                                                        <!-- 🗑️ 복약 이력 삭제 버튼 -->
+                                                        <button type="button" class="btn-history-delete" data-med-id="${med.id}" style="position: relative; z-index: 10; pointer-events: auto; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'">
+                                                            <i class="fa-solid fa-trash-can"></i> <span>이력 삭제</span>
+                                                        </button>
+                                                    </div>
+
+                                                    <p class="timeline-desc" style="margin-top: 12px; color: var(--text-main); font-weight: 500;">
+                                                        ${statusIconHTML} ${med.reason}
+                                                    </p>
                                     <p class="timeline-desc" style="font-size: 12px; margin-top: 5px; color: var(--text-muted);">
                                         ${med.summary ? med.summary[0] : "이상 징후 성분을 면밀하게 관찰 중입니다."}
                                     </p>
@@ -3668,10 +3830,11 @@
             }
         }
 
-        // 복약 정보 아코디언 핸들러
-        function toggleAccordion(btn, idx) {
+        // 복약 정보 아코디언 핸들러 (식약처 e약은요 실시간 프록시 연동)
+        async function toggleAccordion(btn, idx) {
             const content = document.getElementById(`acc-content-${idx}`);
             const isOpened = content.classList.contains("open");
+            const med = globalMedications[idx];
             
             // 모든 다른 아코디언 닫기
             const allContents = document.querySelectorAll(".accordion-content");
@@ -3691,9 +3854,110 @@
 
             if (!isOpened) {
                 content.classList.add("open");
-                content.style.maxHeight = content.scrollHeight + 100 + "px"; // padding 마진 공간 보정
+                
+                // 1. 만약 아직 실시간 조회 데이터를 받아오지 않은 상태라면 프록시 API 호출 트리거
+                if (!content.getAttribute("data-loaded")) {
+                    content.innerHTML = `
+                        <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px; text-align: center;">
+                            <i class="fa-solid fa-spinner fa-spin mr-1"></i> 공공데이터포털 식약처 e약은요 실시간 데이터 수집 중...
+                        </div>
+                    `;
+                    content.style.maxHeight = content.scrollHeight + 100 + "px";
+
+                    try {
+                        const response = await fetch(`${API_BASE}/api/drug-info?medicationName=${encodeURIComponent(med.name)}`);
+                        if (!response.ok) throw new Error("API 호출 오류");
+                        
+                        const kfdaData = await response.json();
+                        const items = kfdaData.body?.items;
+                        const totalCount = kfdaData.body?.totalCount || 0;
+
+                        if (kfdaData.success !== false && items && items.length > 0 && totalCount > 0) {
+                            const item = items[0];
+                            
+                            // 줄바꿈 정제 헬퍼 함수
+                            const cleanText = (txt) => {
+                                if (!txt) return "정보 없음";
+                                return txt.replace(/<[^>]*>/g, "").replace(/\n/g, "<br>");
+                            };
+
+                            content.innerHTML = `
+                                <table class="kfda-table" style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; width: 120px; text-align: center;">공식 효능효과</td>
+                                        <td class="kfda-td" style="padding: 10px; line-height: 1.4;">${cleanText(item.efcyQesitm)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; text-align: center;">용법용량</td>
+                                        <td class="kfda-td" style="padding: 10px; line-height: 1.4;">${cleanText(item.useMethodQesitm)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; text-align: center;">주의사항 (금기)</td>
+                                        <td class="kfda-td" style="padding: 10px; color: var(--status-danger); font-weight: 600; line-height: 1.4;">${cleanText(item.atpnQesitm)}</td>
+                                    </tr>
+                                </table>
+                                <div class="accordion-btn-group" style="margin-top: 12px;">
+                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                        <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 정밀상담 개시 💬
+                                    </button>
+                                </div>
+                            `;
+                            content.setAttribute("data-loaded", "true");
+                        } else {
+                            // 결과가 없을 때의 기존 가이드라인 매칭
+                            throw new Error("결과 없음");
+                        }
+                    } catch (e) {
+                        console.warn("식약처 실시간 데이터 미검출. 폴백 RAG 데이터 가동합니다.", e);
+                        
+                        // 폴백: DB 자체에 수집되었던 RAG 데이터 혹은 AI 기본 가이드라인 제공
+                        if (med.kfdaInfo && (med.kfdaInfo.efcyQesitm || med.kfdaInfo.efcy)) {
+                            const info = med.kfdaInfo;
+                            content.innerHTML = `
+                                <table class="kfda-table" style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px;">
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; width: 120px; text-align: center;">공식 효능효과</td>
+                                        <td class="kfda-td" style="padding: 10px; line-height: 1.4;">${info.efcyQesitm || info.efcy || "정보 없음"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; text-align: center;">용법용량</td>
+                                        <td class="kfda-td" style="padding: 10px; line-height: 1.4;">${info.useMethodQesitm || info.useMethod || "정보 없음"}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="kfda-th" style="padding: 10px; font-weight: 700; text-align: center;">주의사항 (금기)</td>
+                                        <td class="kfda-td" style="padding: 10px; color: var(--status-danger); font-weight: 600; line-height: 1.4;">${info.atpnQesitm || info.atpn || info.warn || "정보 없음"}</td>
+                                    </tr>
+                                </table>
+                                <div class="accordion-btn-group" style="margin-top: 12px;">
+                                    <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                        <i class="fa-solid fa-comment-medical"></i> Pillip(필립) 약사 AI 정밀상담 개시 💬
+                                    </button>
+                                </div>
+                            `;
+                            content.setAttribute("data-loaded", "true");
+                        } else {
+                            // 완전히 없을 때: Pillip 비서 상담 폴백 메시지 출력
+                            content.innerHTML = `
+                                <div style="background: rgba(255,255,255,0.01); border: 1px dashed var(--panel-border); padding: 15px; border-radius:10px; color: var(--text-muted); font-size:12px;">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> 식약처 공공 검색 사전에서 매칭되는 의약품 정보가 수집되지 않았습니다. <br>대신 Pillip 비서에게 물어보시면 상세 복약 조언을 Gemini가 직관적으로 제공해 드립니다.
+                                    <div style="margin-top:10px;">
+                                        <button class="btn-mini-consult" onclick="triggerPillipConsultation(${idx})">
+                                            <i class="fa-solid fa-comment-medical"></i> Pillip 약사 AI 정밀 상담 개시 💬
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    }
+                }
+                
+                // 아코디언 높이 재조정 및 가시화
+                setTimeout(() => {
+                    content.style.maxHeight = content.scrollHeight + 100 + "px";
+                }, 50);
+
                 btn.querySelector(".fa-chevron-down")?.style.setProperty("transform", "rotate(180deg)");
-                showToast(`'${globalMedications[idx].name}' 식약처 상세 수집 사전이 활성화되었습니다.`, "success");
+                showToast(`'${med.name}' 식약처 상세 수집 사전이 활성화되었습니다.`, "success");
             } else {
                 content.classList.remove("open");
                 content.style.maxHeight = null;
@@ -5156,30 +5420,65 @@
         // ==========================================
         // [💡 신규 추가: 약물 복용 이력 안전 이중 검증 삭제 모달 비즈니스 로직]
         // ==========================================
-        function openSafeDeleteVerifyModal(medId, medName) {
+        window.openSafeDeleteVerifyModal = function(medId, medName) {
+            console.log("🔒 [안심 삭제 모달 작동 시작] 약물ID:", medId, "이름:", medName);
             document.getElementById("delete-med-id").value = medId;
             document.getElementById("delete-med-fullname").value = medName;
+            
+            // 입력 상자 초기화
+            const inputField = document.getElementById("delete-confirm-input");
+            if (inputField) {
+                inputField.value = "";
+            }
             
             // 시각화 타겟 텍스트 바인딩 (자식 스팬인 delete-med-target-text 에 매핑)
             const targetTextSpan = document.getElementById("delete-med-target-text");
             if (targetTextSpan) {
                 targetTextSpan.innerText = medName;
             } else {
-                document.getElementById("delete-med-target-display").innerText = medName;
+                const legacyDisplay = document.getElementById("delete-med-target-display");
+                if (legacyDisplay) legacyDisplay.innerText = medName;
             }
             
             // 모달 열기
-            document.getElementById("delete-verify-modal-overlay").classList.add("active");
-        }
+            const overlay = document.getElementById("delete-verify-modal-overlay");
+            if (overlay) {
+                overlay.classList.add("active");
+                console.log("✅ [안심 삭제 모달 화면 활성화 성공]");
+            } else {
+                console.error("⚠️ 오류: delete-verify-modal-overlay 요소를 화면에서 찾을 수 없습니다.");
+            }
+        };
 
-        function closeSafeDeleteVerifyModal() {
-            document.getElementById("delete-verify-modal-overlay").classList.remove("active");
-        }
+        window.closeSafeDeleteVerifyModal = function() {
+            const overlay = document.getElementById("delete-verify-modal-overlay");
+            if (overlay) overlay.classList.remove("active");
+        };
+
+        /**
+         * 👵👴 [어르신 안심 0타이핑 자동완성 도우미]: 약 이름을 콕 터치하면 사르륵 대입해 줍니다.
+         */
+        window.handleDeleteMedNameTouch = function() {
+            const fullName = document.getElementById("delete-med-fullname").value;
+            const inputField = document.getElementById("delete-confirm-input");
+            if (fullName && inputField) {
+                inputField.value = fullName;
+                showToast("✨ 글자가 자동으로 예쁘게 입력되었습니다! 이제 'O 예, 지웁니다' 버튼을 누르세요.", "success");
+            }
+        };
 
         async function handleSafeDeleteVerifySubmit(e) {
             e.preventDefault();
             
             const medId = document.getElementById("delete-med-id").value;
+            const targetName = document.getElementById("delete-med-fullname").value.trim();
+            const userInput = document.getElementById("delete-confirm-input").value.trim();
+            
+            // 2차 정밀 문자열 일치 검증 (어르신 실수 원천 봉쇄)
+            if (userInput !== targetName) {
+                showToast("⚠️ 입력한 약물명이 일치하지 않습니다. 위의 이름을 콕! 터치하시거나 똑같이 써 주세요.", "error");
+                return;
+            }
             
             // 👵👴 [초안전 검증]: 세션 누락 또는 변수 유실 체크
             if (!currentUser || !currentUser.id) {
