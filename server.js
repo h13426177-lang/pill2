@@ -232,7 +232,7 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
@@ -323,7 +323,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서 원본 이미지를 눈으로 읽고 분석하여 데이터를 정형화하는 'Pillip' 메디컬 비전 AI 어시스턴트입니다.
@@ -513,8 +513,9 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
         let finalPDate = prescriptionDate || new Date().toISOString().split("T")[0];
         let defaultDays = parseInt(prescriptionDays) || 3;
 
-        // 📸 1. 이미지 사진(약봉투/처방전) 업로드 시나리오 (다중 약물 스캔 기능 탑재)
+        // 📸 1. 이미지 사진(약봉투/처방전) 업로드 시나리오 (multer 메모리 버퍼 수신 및 base64 인코딩)
         if (req.file) {
+            // Gemini API가 완벽하게 인식하는 구조의 멀티모달 이미지 데이터 파트 구성
             const imagePart = {
                 inlineData: {
                     data: req.file.buffer.toString("base64"),
@@ -543,9 +544,11 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 `;
 
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+                // 존재하지 않는 가상의 gemini-3.6-flash 대신, 공식 비전 이미지 분석 모델인 gemini-1.5-flash로 전격 교체!
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
+                
                 if (visionText.includes("```")) {
                     visionText = visionText.replace(/```json/g, "").replace(/```/g, "").trim();
                 }
@@ -564,8 +567,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 }
             } catch (visionErr) {
                 console.error("약봉투/처방전 다중 비전 분석 실패 폴백 가동:", visionErr);
-                // 이미지 해독 중 API 에러 발생 시 전체가 다운되지 않도록 깔끔하게 가드
-                return res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
+                return res.status(500).json({ error: "처방전 이미지 분석 중 에러가 발생했습니다. 파일 규격이나 API 상태를 점검해 주세요." });
             }
         }
 
@@ -625,7 +627,8 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
 
             let parsedAnalysis = {};
             try {
-                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
+                // 마찬가지로 RAG 분석 모델명도 공식 gemini-1.5-flash로 정정!
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const response = await model.generateContent(analysisPrompt);
                 let responseText = response.response.text().trim();
                 if (responseText.includes("```")) {
@@ -634,7 +637,6 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 parsedAnalysis = JSON.parse(responseText);
             } catch (pe) {
                 console.error(`약물 [${cleanMedName}] 식약처 RAG 분석 에러 발생 폴백 작동:`, pe);
-                // AI 응답이 실패하더라도 서버 크래시를 완벽 차단하고 우아한 정형 데이터 폴백 수혈
                 parsedAnalysis = {
                     name: cleanMedName,
                     efficacy: "직접 기재해 주세요.",
@@ -658,7 +660,6 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 atpnQesitm: parsedAnalysis.warnings || "복용법을 준수하세요.",
                 useMethodQesitm: "전문의 처방에 따라 정량 복용하세요.",
                 
-                // 💡 [프론트엔드 아코디언 매핑 완벽 바인딩]
                 efcy: parsedAnalysis.efficacy || "안내된 효능 정보가 안전합니다.",
                 useMethod: "전문의 처방 및 약봉지 지침에 따라 정량 복용하세요.",
                 atpn: parsedAnalysis.warnings || "복용법을 준수하세요.",
@@ -672,7 +673,6 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 userId: userId,
                 name: cleanMedName,
                 
-                // 💡 [프론트엔드 리포트 화면 연동용 최신 필드 전격 고도화!]
                 risk: parsedAnalysis.risk || "안심",
                 reason: parsedAnalysis.reason || "기존 복용 약력과의 분석 결과 약학적 충돌 우려가 적어 복용이 안심되는 단계입니다.",
                 score: parseInt(parsedAnalysis.score) || 15,
@@ -685,7 +685,7 @@ app.post("/api/medications/register/:userId", upload.single("prescriptionImage")
                 prescriptionDate: finalPDate,
                 prescriptionDays: parsedAnalysis.pharmacology?.prescriptionDays || med.days,
                 duration_days: parsedAnalysis.pharmacology?.prescriptionDays || med.days,
-                prescriptionFrequency: med.frequency || 3, // 💡 [자동 알람 설정용 일일 복용 횟수 저장]
+                prescriptionFrequency: med.frequency || 3,
                 pharmacology: {
                     halfLifeHours: parsedAnalysis.pharmacology?.halfLifeHours || 4.0,
                     similarityScore: parsedAnalysis.pharmacology?.similarityScore || parseInt(parsedAnalysis.score) || 15,
