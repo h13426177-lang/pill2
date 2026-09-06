@@ -3051,7 +3051,7 @@
             <i class="fa-solid fa-brain spinner-icon"></i>
         </div>
         <div class="loading-text">SafeDrug AI 정밀 약리학 분석 중...</div>
-        <div class="loading-subtext">Gemini 3.5 Flash가 처방전 이미지 및 건강 프로필 상호작용 위험도를 고속 연산하고 있습니다.</div>
+        <div class="loading-subtext">Gemini 1.5 Flash가 처방전 이미지 및 건강 프로필 상호작용 위험도를 고속 연산하고 있습니다.</div>
     </div>
 
     <!-- ==========================================
@@ -4031,6 +4031,7 @@
             }
 
             const loadingOverlay = document.getElementById("loading-overlay");
+            loadingOverlay.style.display = "flex"; // 🛡️ 인라인 스타일로 가시성을 명시적으로 활성화
             loadingOverlay.classList.add("active");
 
             const formData = new FormData();
@@ -4083,6 +4084,7 @@
             } finally {
                 // 🛡️ [무한 로딩 차단 안전핀]: 성공하든 실패하든 상관없이 무조건 까만 로딩 배경 오버레이를 화면에서 제거!
                 loadingOverlay.classList.remove("active");
+                loadingOverlay.style.display = "none"; // 🛡️ 인라인 스타일로 오버레이를 완전히 소멸시켜 숨김 처리 보증
             }
         });
 
