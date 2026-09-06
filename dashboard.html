@@ -4050,9 +4050,7 @@
                 if (!response.ok || !contentType || !contentType.includes("application/json")) {
                     const errorText = await response.text();
                     console.error("🚨 [서버 통신 예외 발생] 응답 내용:", errorText);
-                    alert("서버와 통신 중 문제가 발생했습니다. API 주소 및 서버 배포 상태(Render)를 점검해 주세요.");
-                    loadingOverlay.classList.remove("active");
-                    return;
+                    throw new Error("서버 에러 응답 수신");
                 }
 
                 const data = await response.json();
@@ -4075,14 +4073,16 @@
                 await fetchUserMedicationHistory();
 
                 setTimeout(() => {
-                    loadingOverlay.classList.remove("active");
                     switchTab("report");
                 }, 1000);
 
             } catch (err) {
-                console.error(err);
-                loadingOverlay.classList.remove("active");
+                console.error("🚨 [프론트엔드 이미지 분석 예외]:", err);
+                alert("이미지 분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
                 showToast(err.message, "error");
+            } finally {
+                // 🛡️ [무한 로딩 차단 안전핀]: 성공하든 실패하든 상관없이 무조건 까만 로딩 배경 오버레이를 화면에서 제거!
+                loadingOverlay.classList.remove("active");
             }
         });
 
