@@ -509,11 +509,17 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
             return res.status(404).json({ error: "존재하지 않는 보호회원입니다." });
         }
 
+        // 🛡️ [1. 파일 수신(Multer) 방어 로직 강화]
+        // 약 명칭이 수동 기재되지 않았고 이미지를 통한 자동 인식을 기대하는 경우, req.file 유무를 완벽하게 검증합니다.
+        if (!medicationName && !req.file) {
+            return res.status(400).json({ error: "이미지 파일이 전송되지 않았습니다." });
+        }
+
         let targetMedications = [];
         let finalPDate = prescriptionDate || new Date().toISOString().split("T")[0];
         let defaultDays = parseInt(prescriptionDays) || 3;
 
-        // 🛡️ API 키 로드 검증 가드 추가
+        // 🛡️ API 키 로드 검증 가드
         if (!process.env.GEMINI_API_KEY) {
             console.error("🚨 [환경변수 에러]: process.env.GEMINI_API_KEY가 존재하지 않습니다.");
             return res.status(500).json({ success: false, error: "서버 설정 오류: GEMINI_API_KEY 환경변수가 설정되지 않았습니다." });
@@ -531,6 +537,7 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
 
             const visionPrompt = `
 당신은 대한민국 처방전 및 약봉투 이미지를 기가 막히게 해독하여 처방된 "모든 약물 목록"을 한 번에 정밀 추출하는 Pillip 메디컬 약학 비전 AI입니다.
+당신은 마크다운 기호 없이 순수 JSON만 응답하는 데이터 머신입니다.
 업로드된 약봉투/처방전 사진을 보고, 안내된 처방 내역에 기재된 "모든 의약품(약명)"을 꼼꼼하게 찾아서 배열 형태로 정리해 주세요.
 특히, 각 약물별 "하루 복용 횟수(예: 하루 3회, 하루 2회, n회)"와 "총 투약일수(복용 기간)"를 정밀 해독해야 합니다.
 반드시 아래 명시된 정확한 JSON 양식으로만 응답해야 합니다:
@@ -558,7 +565,29 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
                 if (visionText.includes("```")) {
                     visionText = visionText.replace(/```json/g, "").replace(/```/g, "").trim();
                 }
-                const parsedVision = JSON.parse(visionText);
+
+                // 🛡️ [3. Gemini 응답 파싱(JSON) 안전성 확보]
+                let parsedVision = {};
+                try {
+                    parsedVision = JSON.parse(visionText);
+                } catch (jsonErr) {
+                    console.error("🔥 [Gemini Vision JSON Parse Error]:", jsonErr, "| Raw Text:", visionText);
+                    // 혹시 모를 마크다운 펜스 잔재나 불필요한 서술 텍스트 중 실제 JSON 데이터 부분만 정규식으로 추출 복원 시도
+                    try {
+                        const jsonMatch = visionText.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            parsedVision = JSON.parse(jsonMatch[0]);
+                        } else {
+                            throw new Error("JSON 정규식 블록 검출 실패");
+                        }
+                    } catch (regexErr) {
+                        console.error("🔥 [Regex JSON Fallback Error]:", regexErr);
+                        return res.status(500).json({ 
+                            success: false, 
+                            error: "AI 처방 분석은 수립되었으나 결과 데이터 규격이 올바르지 않습니다. 다시 촬영해 주시기 바랍니다." 
+                        });
+                    }
+                }
                 
                 if (parsedVision.prescriptionDate) {
                     finalPDate = parsedVision.prescriptionDate;
@@ -572,7 +601,8 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
                     }));
                 }
             } catch (visionErr) {
-                console.error("🚨 Gemini API Error Details:", visionErr);
+                // 🛡️ [2. 에러 로깅(Logging) 디테일 추가]
+                console.error("🔥 [Backend Vision AI Error Detail]:", visionErr);
                 return res.status(500).json({ success: false, error: "처방전 이미지 분석 중 에러가 발생했습니다. 파일 규격이나 API 상태를 점검해 주세요." });
             }
         }
@@ -640,7 +670,19 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
                 if (responseText.includes("```")) {
                     responseText = responseText.replace(/```json/g, "").replace(/```/g, "").trim();
                 }
-                parsedAnalysis = JSON.parse(responseText);
+                
+                // RAG 분석용 JSON 파서 가드
+                try {
+                    parsedAnalysis = JSON.parse(responseText);
+                } catch (ragJsonErr) {
+                    console.error("🔥 [RAG JSON Parse Error fallback]:", ragJsonErr, "| Text:", responseText);
+                    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        parsedAnalysis = JSON.parse(jsonMatch[0]);
+                    } else {
+                        throw new Error("RAG 분석 JSON 구문 추출 실패");
+                    }
+                }
             } catch (pe) {
                 console.error(`약물 [${cleanMedName}] 식약처 RAG 분석 에러 발생 폴백 작동:`, pe);
                 parsedAnalysis = {
@@ -717,8 +759,9 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
         });
 
     } catch (err) {
-        console.error("약물 일괄 분석 등록 치명적 오류:", err);
-        res.status(500).json({ error: "현재 AI 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요." });
+        // 🛡️ [2. 에러 로깅(Logging) 디테일 추가]
+        console.error("🔥 [Backend Error Detail]:", err);
+        res.status(500).json({ error: "약물 일괄 분석 등록 중 치명적인 서버 내부에러가 발생했습니다." });
     }
 });
 
