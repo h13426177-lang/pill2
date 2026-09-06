@@ -513,6 +513,12 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
         let finalPDate = prescriptionDate || new Date().toISOString().split("T")[0];
         let defaultDays = parseInt(prescriptionDays) || 3;
 
+        // 🛡️ API 키 로드 검증 가드 추가
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("🚨 [환경변수 에러]: process.env.GEMINI_API_KEY가 존재하지 않습니다.");
+            return res.status(500).json({ success: false, error: "서버 설정 오류: GEMINI_API_KEY 환경변수가 설정되지 않았습니다." });
+        }
+
         // 📸 1. 이미지 사진(약봉투/처방전) 업로드 시나리오 (multer 메모리 버퍼 수신 및 base64 인코딩)
         if (req.file) {
             // Gemini API가 완벽하게 인식하는 구조의 멀티모달 이미지 데이터 파트 구성
@@ -544,7 +550,7 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
 `;
 
             try {
-                // 존재하지 않는 가상의 gemini-3.6-flash 대신, 공식 비전 이미지 분석 모델인 gemini-1.5-flash로 전격 교체!
+                // 공식 이미지 분석 비전 모델인 gemini-1.5-flash 가동
                 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
@@ -566,8 +572,8 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
                     }));
                 }
             } catch (visionErr) {
-                console.error("약봉투/처방전 다중 비전 분석 실패 폴백 가동:", visionErr);
-                return res.status(500).json({ error: "처방전 이미지 분석 중 에러가 발생했습니다. 파일 규격이나 API 상태를 점검해 주세요." });
+                console.error("🚨 Gemini API Error Details:", visionErr);
+                return res.status(500).json({ success: false, error: "처방전 이미지 분석 중 에러가 발생했습니다. 파일 규격이나 API 상태를 점검해 주세요." });
             }
         }
 
