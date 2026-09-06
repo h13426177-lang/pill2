@@ -232,7 +232,7 @@ app.post("/api/profile/parse-checkup", async (req, res) => {
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서를 전문적으로 분석하여 데이터를 추출하는 'Pillip' 메디컬 AI 어시스턴트입니다.
@@ -323,7 +323,7 @@ app.post("/api/profile/parse-checkup-image", upload.single("image"), async (req,
 
         let responseText = "";
         try {
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
 
             const prompt = `
 당신은 대한민국 일반건강검진 결과통보서 원본 이미지를 눈으로 읽고 분석하여 데이터를 정형화하는 'Pillip' 메디컬 비전 AI 어시스턴트입니다.
@@ -557,8 +557,8 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
 `;
 
             try {
-                // 공식 이미지 분석 비전 모델인 gemini-1.5-flash 가동
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                // 공식 이미지 분석 비전 모델인 gemini-3.6-flash 가동
+                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
                 const visionResult = await model.generateContent([visionPrompt, imagePart]);
                 let visionText = visionResult.response.text().trim();
                 
@@ -663,8 +663,8 @@ app.post("/api/medications/register/:userId", upload.single("image"), async (req
 
             let parsedAnalysis = {};
             try {
-                // 마찬가지로 RAG 분석 모델명도 공식 gemini-1.5-flash로 정정!
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                // 마찬가지로 RAG 분석 모델명도 공식 gemini-3.6-flash로 정정!
+                const model = genAI.getGenerativeModel({ model: "gemini-3.6-flash" });
                 const response = await model.generateContent(analysisPrompt);
                 let responseText = response.response.text().trim();
                 if (responseText.includes("```")) {
